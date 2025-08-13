@@ -5,14 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 <title>Каталог</title>
 <style>
-  /* Сброс и базовые стили */
   body {
-    font-family: Arial, sans-serif;
+    font-family: Gill Sans, sans-serif;
     margin: 0; padding: 11px;
     background-color: var(--bg);
     color: var(--text);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
   }
 
   :root {
@@ -21,22 +18,7 @@
     --card-bg: #fff;
     --btn-bg: #0088cc;
     --btn-hover: #0077b3;
-    --input-bg: #fff;
-    --input-text: #222;
     --border-color: #ccc;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-        --bg: #d3f1ff;
-        --text: #000000;
-        --card-bg: #fff;
-        --btn-bg: #005f8c;
-        --btn-hover: #004c70;
-        --input-bg: #3a3a3a;
-        --input-text: #312c2c;
-        --border-color: #555;
-    }
   }
 
   h1 {
@@ -48,60 +30,18 @@
     display: flex;
     gap: 10px;
     margin-bottom: 15px;
-    align-items: center;
-    box-shadow: 0 70px 70px rgb(0 0 0 / 0.2);
-    flex-wrap: nowrap; /* чтобы при нехватке места переносились */
-    overflow-x: auto;
   }
 
-  .controls button {
-    flex-shrink: 1;         /* чтобы кнопки не сжимались меньше заданного */
-    flex-grow: 1;           /* чтобы равномерно занимали место */
-    min-width: 20px;       /* минимальная ширина кнопки */
-    max-width: 40px;       /* максимальная ширина для контроля */
-    background-color: #ffffff;
-    color: #312c2c;
-    border-radius: 25px;
-    box-shadow: 0 70px 70px rgb(0 0 0 / 0.2);
-    padding: 12px 0;          /* верх/низ 9px, по бокам убрал, ширина фиксируется */
-    font-size: 14px;
-    border: 1px solid var(--border-color);
-    border: none;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s ease;
-    text-align: center;
-  }
- 
-  .controls button:hover {
-    background-color: #ffffff;
-    border: 1px solid var(--border-color);
-  }
-
-  .controls button:active {
-    background-color: #ffffff;
-    border: 1px solid var(--border-color);
-    transform: scale(0.97);
-    transition: transform 0.1s ease;
-  }
-
-  input[type="text"], select {
+  select {
     flex-grow: 1;
-    flex-shrink: 1;
-    min-width: 100px;    /* минимальная ширина */
-    max-width: 300px;    /* максимальная ширина */
+    min-width: 100px;
+    max-width: 300px;
     padding: 10px;
     font-size: 16px;
-    box-shadow: 0 70px 70px rgb(0 0 0 / 0.2);
-    border: 1px solid #ffffff;
-    border-radius: 25px;
+    border: 1px solid var(--border-color);
+    border-radius: 11px;
     background-color: #ffffff;
-    color: var(--input-text);
-    outline-offset: 2px;
-  }
-
-  input[type="text"]::placeholder {
-    color: #999;
+    color: var(--text);
   }
 
   #catalog {
@@ -113,24 +53,22 @@
 
   .item {
     background: var(--card-bg);
-    border-radius: 25px;
-    box-shadow: 0 70px 70px rgb(0 0 0 / 0.2);
+    border-radius: 11px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     padding: 12px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    height: 80%;
-    transition: opacity 0.15s ease, transform 0.15s ease;
-    opacity: 1;
+    cursor: pointer;
+    transition: transform 0.2s ease;
   }
-  .item.fade-out {
-    opacity: 0;
-    pointer-events: none;
+
+  .item:hover {
+    transform: scale(1.03);
   }
 
   .item img {
     width: 100%;
-    border-radius: 25px;
+    border-radius: 11px;
     object-fit: cover;
     aspect-ratio: 5 / 3;
     margin-bottom: 12px;
@@ -139,12 +77,12 @@
   .item h3 {
     margin: 0 0 6px;
     font-size: 16px;
-    line-height: 1.2;
+    text-align: center; /* центрируем текст в своём блоке */
+    flex: 1; /* даём занять всё свободное место */
   }
 
   .item p {
     font-size: 14px;
-    color: var(--text);
     flex-grow: 1;
     margin-bottom: 8px;
   }
@@ -154,57 +92,76 @@
     color: #000000;
     margin-bottom: 10px;
     font-size: 16px;
+    text-align: right;
   }
 
-  button {
+  /* Модалка */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(5px);
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 80%;
+    width: 400px;
+    padding: 20px;
+    position: relative;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .modal-content img {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+
+  .close-btn {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    font-size: 26px;
+    cursor: pointer;
+  }
+  #modal-description {
+    white-space: normal; /* переносы по <br> будут работать */
+  }
+
+  #modal-price {
+    font-weight: bold;
+    margin-bottom: 12px;
+  }
+
+  #modal-order {
     background-color: var(--btn-bg);
     border: none;
-    border-radius: 25px;
+    border-radius: 15px;
     color: white;
-    padding: 9px 0;
+    padding: 10px 0;
+    width: 100%;
     font-size: 16px;
     cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s ease;
-    transform: scale(0.95);
-    transition: transform 0.1s ease;
-    width: 100%;
   }
 
-  button:active {
-    background-color: var(--btn-hover);
-    transform: scale(0.95);
-    transition: transform 0.1s ease;
-  }
-
-  button:hover {
+  #modal-order:hover {
     background-color: var(--btn-hover);
   }
-  #scrollTopBtn {
-    position: fixed;
-    bottom: 40px;
-    right: 40px;
-    z-index: 1000;
-    background-color: #c2deeb96;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    font-size: 24px;
-    cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: opacity 0.3s ease;
-    opacity: 0;
-    pointer-events: none;
+
+  @keyframes fadeIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
   }
 
-  #scrollTopBtn.show {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-/* Футер с магазином и ссылкой */
   #footer {
     text-align: center;
     margin-top: 20px;
@@ -214,27 +171,28 @@
 
   #footer button {
     margin-top: 8px;
-    width: auto;
     padding: 10px 20px;
+    border-radius: 8px;
+    background-color: var(--btn-bg);
+    border: none;
+    color: white;
+    cursor: pointer;
   }
 
-  /* Адаптация под мобильные экраны */
+  #footer button:hover {
+    background-color: var(--btn-hover);
+  }
+
   @media (max-width: 768px) {
     #catalog {
       grid-template-columns: repeat(2, 1fr);
-      gap: 20px 20px;
-    }
-    .item {
-      height: 360px;
+      gap: 20px;
     }
   }
   @media (max-width: 480px) {
     #catalog {
       grid-template-columns: 1fr;
-      gap: 18px 18px;
-    }
-    .item {
-      height: 380px;
+      gap: 18px;
     }
   }
 </style>
@@ -244,112 +202,68 @@
 <h1>Ah! Margo! Cake SPb</h1>
 
 <div class="controls">
-  <input id="search" type="text" placeholder="Поиск по названию..." autocomplete="off" />
   <select id="category">
     <option value="">Все категории</option>
   </select>
-  <button id="sortPriceBtn" title="▲▼">▲▼</button>
 </div>
 
 <div id="catalog">Загрузка...</div>
 
-<div id="footer">
-  <div>Магазин <b>«ТвойКаталог»</b></div>
-  <button onclick="openTelegramChannel()">Перейти в наш Telegram-канал</button>
+<!-- Модальное окно -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn">&times;</span>
+    <img id="modal-image" src="" alt="" />
+    <h3 id="modal-title"></h3>
+    <p id="modal-description"></p>
+    <div id="modal-price"></div>
+    <button id="modal-order">Заказать</button>
+  </div>
 </div>
-<button id="scrollTopBtn" title="Наверх">↑</button>
+
+<div id="footer">
+  <div><b>«Ah! Margo! Cake SPb»</b></div>
+  <button onclick="openTelegramChannel()">Перейти в Telegram-канал</button>
+</div>
+
 <script>
-  const TELEGRAM_USERNAME = "loobw";
+  const TELEGRAM_USERNAME = "Ahmargo_cakespb";
 
   const items = [
-    {
-      id: "1",
-      category: "Торты",
-      name: "ТРИ ШОКОЛАДА",
-      description: "Описание",
-      price: "10 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    },
-    {
-      id: "2",
-      category: "Торты",
-      name: "Королевская Диабелла",
-      description: "Описание",
-      price: "90 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    },
-    {
-      id: "3",
-      category: "Торты",
-      name: "Пряная морковь/апельсин",
-      description: "Описание",
-      price: "150 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    },
-    {
-      id: "4",
-      category: "Торты",
-      name: "Черный лес",
-      description: "Описание",
-      price: "100 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    },
-    {
-      id: "5",
-      category: "Торты",
-      name: "Сливочная черника",
-      description: "Описание",
-      price: "25 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    },
-    {
-      id: "6",
-      category: "Моти",
-      name: "Черничный йогурт",
-      description: "Описание",
-      price: "1000 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    },
-    {
-      id: "7",
-      category: "Моти",
-      name: "Малина-фисташка",
-      description: "Описание",
-      price: "1 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    },
-    {
-      id: "8",
-      category: "Моти",
-      name: "Love is… клубника/банан",
-      description: "Описание",
-      price: "15 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    },
-    {
-      id: "9",
-      category: "Моти",
-      name: "Пина Колада (ананас/кокос)",
-      description: "Описание",
-      price: "40 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    },
-    {
-      id: "10",
-      category: "Пирожные",
-      name: "«Картошка» 6 шт",
-      description: "Описание",
-      price: "700 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    },
-    {
-      id: "11",
-      category: "Пирожные",
-      name: "«Картошка» 12 шт",
-      description: "Описание",
-      price: "1200 ₽",
-      image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album"
-    }
+    { id: "1", category: "Торты", name: "ТРИ ШОКОЛАДА", 
+      description: "• Шоколадно-миндальный бисквит<br>• Сливочный мусс на основе белого бельгийского шоколада<br>• Сливочный мусс на основе молочного шоколада<br>• Сливочный мусс на основе тёмного шоколада<br>• Зеркальная глазурь или шоковелюр", 
+      price: "10 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+    { id: "2", category: "Торты", name: "Королевская Диабелла", 
+      description: "• Шоколадно-миндальный бисквит<br>• Ганаш на молочном шоколаде с кусочками бисквита и цельного фундука<br>• Баварский мусс на основе белого шоколада и фундучной пасты<br>• Зеркальная глазурь или шоколадный велюр", 
+      price: "90 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+    { id: "3", category: "Торты", name: "Пряная морковь/апельсин", 
+      description: "• Морковный пряный бисквит с грецким орехом, корицей, имбирем, мускатным орехом и цедрой апельсина<br>• Апельсиновое компоте<br>• Мусс на основе сливочного сыра<br>• Зеркальная глазурь или шоковелюр", 
+      price: "90 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+    { id: "4", category: "Торты", name: "Черный лес", 
+      description: "• Шоколадно-миндальный бисквит<br>• Вишнёвое компоте<br>• Вишневый мусс с кусочками тёмного бельгийского шоколада<br>• Сливочный мусс<br>• Зеркальная глазурь или шоколадный велюр", 
+      price: "90 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+    { id: "5", category: "Торты", name: "Сливочная черника", 
+      description: "• Черничное конфи<br>• Карамельная Намелака (нежнейший сливочно-шоколадно-карамельный крем)<br>• Дакуаз с ягодами черники (легкий воздушный бисквит без добавления жиров на ореховой муке с ягодами черники)<br>• Сливочный Мусс<br>• Зеркальная глазурь или Шоколадный велюр", 
+      price: "90 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+    { id: "6", category: "Моти", name: "Черничный йогурт", 
+      description: "Нежнейший крем на основе греческого йогурта, творожного сыра и спелой черники", 
+      price: "250 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+    { id: "7", category: "Моти", name: "Малина-фисташка", 
+      description: "Фисташковое кремю, нежнейший сливочно-малиновый крем, заварное японское тесто на рисовой муке", 
+      price: "250 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+    { id: "8", category: "Моти", name: "Love is… (клубника/банан)", 
+      description: "Вкус навеен легендарной жевательной резинкой 90х. Клубничный центр клубника 🍓 банановый крем 🍌 и тянущееся рисовое тесто 👌", 
+      price: "250 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+    { id: "9", category: "Моти", name: "Пина Колада (ананас/кокос)", 
+      description: "Два сливочных крема: ананасовый 🍍 и кокосовый 🥥 объединяются в бомбический тандем знаменитого коктейля коктейль 🍸 🍹 🍸 🍹", 
+      price: "250 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+    { id: "10", category: "Пирожные", name: "«Картошка» 6 шт", 
+      description: "Легендарное пирожное «Картошка».<br>От классического пирожного она отличается….. всем))))<br>Насыщенный, влажный бисквит из миндальной муки и элитного французского черного какао, которое придает яркий вкус какао-бобов. Формуется «картошка» с помощью нежного сливочно-молочного соуса. А снаружи пирожное покрыто хрустящей корочкой из итальянского шоколада.", 
+      price: "900 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+    { id: "11", category: "Пирожные", name: "«Картошка» 12 шт", 
+      description: "Легендарное пирожное «Картошка».<br>От классического пирожного она отличается….. всем))))<br>Насыщенный, влажный бисквит из миндальной муки и элитного французского черного какао, которое придает яркий вкус какао-бобов. Формуется «картошка» с помощью нежного сливочно-молочного соуса. А снаружи пирожное покрыто хрустящей корочкой из итальянского шоколада.", 
+      price: "1800 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" }
+    // ... остальные товары
   ];
 
   function fillCategories() {
@@ -363,93 +277,67 @@
     });
   }
 
-  let sortAsc = true;  // true — по возрастанию, false — по убыванию
-
-  document.getElementById("sortPriceBtn").addEventListener("click", () => {
-    sortAsc = !sortAsc;
-    document.getElementById("sortPriceBtn").textContent = sortAsc ? "▲" : "▼";
-    renderCatalog();
-  });
-
-  function priceToNumber(priceStr) {
-    return Number(priceStr.replace(/\D/g, ""));
-  }
-
   function renderCatalog() {
-    const search = document.getElementById("search").value.toLowerCase();
     const category = document.getElementById("category").value;
     const catalogDiv = document.getElementById("catalog");
+    catalogDiv.innerHTML = "";
 
-  // Получаем текущие карточки и скрываем их с анимацией
-    const currentItems = Array.from(catalogDiv.children);
-    currentItems.forEach(item => item.classList.add('fade-out'));
+    let filtered = items.filter(i => (!category || i.category === category));
 
-    setTimeout(() => {
-      catalogDiv.innerHTML = "";
+    if (filtered.length === 0) {
+      catalogDiv.innerHTML = "<p>Ничего не найдено.</p>";
+      return;
+    }
 
-      let filtered = items.filter(i =>
-        (!category || i.category === category) &&
-        (!search || i.name.toLowerCase().includes(search))
-      );
-
-      filtered.sort((a, b) => {
-        const priceA = priceToNumber(a.price);
-        const priceB = priceToNumber(b.price);
-        return sortAsc ? priceA - priceB : priceB - priceA;
-      });
-
-      if (filtered.length === 0) {
-        catalogDiv.innerHTML = "<p>Ничего не найдено.</p>";
-        return;
-      }
-
-      filtered.forEach(i => {
-        const div = document.createElement("div");
-        div.className = "item fade-out";  // начинаем с прозрачности 0
-        div.innerHTML = `
-          <img src="${i.image}" alt="${i.name}" loading="lazy" />
+    filtered.forEach(i => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <img src="${i.image}" alt="${i.name}" loading="lazy" />
+        <div class="item-header">
           <h3>${i.name}</h3>
-          <p>${i.description}</p>
           <div class="price">${i.price}</div>
-          <button onclick="orderItem('${i.name.replace(/'/g, "\\'")}')">Заказать</button>
-        `;
-        catalogDiv.appendChild(div);
+        </div>
 
-      // Через небольшой таймаут включаем плавное появление
-        setTimeout(() => {
-          div.classList.remove('fade-out');
-        }, 50);
-      });
-    }, 300);  // время совпадает с transition в CSS
+      `;
+      div.addEventListener("click", () => openModal(i));
+      catalogDiv.appendChild(div);
+    });
   }
 
+  function openModal(item) {
+    document.getElementById("modal-image").src = item.image;
+    document.getElementById("modal-title").textContent = item.name;
+    document.getElementById("modal-description").innerHTML = item.description;
+    document.getElementById("modal-price").textContent = item.price;
+    document.getElementById("modal-order").onclick = () => orderItem(item.name);
+    document.getElementById("modal").style.display = "flex";
+  }
+
+  document.querySelector(".close-btn").addEventListener("click", () => {
+    document.getElementById("modal").style.display = "none";
+  });
+
+  document.getElementById("modal").addEventListener("click", (e) => {
+    if (e.target.id === "modal") {
+      document.getElementById("modal").style.display = "none";
+    }
+  });
 
   function orderItem(name) {
     const message = encodeURIComponent(`Здравствуйте! Хочу заказать: ${name}`);
     window.open(`https://t.me/${TELEGRAM_USERNAME}?text=${message}`, "_blank");
   }
 
-  document.getElementById("search").addEventListener("input", renderCatalog);
+  function openTelegramChannel() {
+    window.open(`https://t.me/ahmargo_cake`, "_blank");
+  }
+
   document.getElementById("category").addEventListener("change", renderCatalog);
 
-  // Запускаем заполнение и рендер сразу
   fillCategories();
   renderCatalog();
-const scrollTopBtn = document.getElementById("scrollTopBtn");
-
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 300) {
-    scrollTopBtn.classList.add("show");
-  } else {
-    scrollTopBtn.classList.remove("show");
-  }
-});
-
-scrollTopBtn.addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
 </script>
+
 </body>
 </html>
-
-
