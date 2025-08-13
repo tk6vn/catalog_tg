@@ -8,12 +8,12 @@
   body {
     font-family: Gill Sans, sans-serif;
     margin: 0; padding: 11px;
-    background-color: #d3f1ff;
+    background-color: var(--bg);
     color: var(--text);
   }
 
   :root {
-    --bg: #f5f5f5;
+    --bg: #e79e8382;
     --text: #222;
     --card-bg: #fff;
     --btn-bg: #0088cc;
@@ -35,11 +35,11 @@
   select {
     flex-grow: 1;
     min-width: 100px;
-    max-width: 600px;
+    max-width: 500px;
     padding: 10px;
     font-size: 16px;
     border: 1px solid var(--border-color);
-    border-radius: 11px;
+    border-radius: 15px;
     background-color: #ffffff;
     color: var(--text);
   }
@@ -53,7 +53,7 @@
 
   .item {
     background: var(--card-bg);
-    border-radius: 11px;
+    border-radius: 15px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
     padding: 12px;
     display: flex;
@@ -68,7 +68,7 @@
 
   .item img {
     width: 100%;
-    border-radius: 11px;
+    border-radius: 15px;
     object-fit: cover;
     aspect-ratio: 5 / 3;
     margin-bottom: 12px;
@@ -112,7 +112,7 @@
 
   .modal-content {
     background: white;
-    border-radius: 12px;
+    border-radius: 15px;
     max-width: 80%;
     width: 400px;
     padding: 20px;
@@ -122,7 +122,7 @@
 
   .modal-content img {
     width: 100%;
-    border-radius: 12px;
+    border-radius: 15px;
     margin-bottom: 12px;
   }
 
@@ -133,6 +133,10 @@
     font-size: 26px;
     cursor: pointer;
   }
+
+  #modal-title {
+    text-align: center;
+  }
   #modal-description {
     white-space: normal; /* переносы по <br> будут работать */
   }
@@ -140,6 +144,7 @@
   #modal-price {
     font-weight: bold;
     margin-bottom: 12px;
+    text-align: right;
   }
 
   #modal-order {
@@ -162,6 +167,30 @@
     to { transform: scale(1); opacity: 1; }
   }
 
+  #scrollTopBtn {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    z-index: 1000;
+    background-color: #c2deeb96;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #scrollTopBtn.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
   #footer {
     text-align: center;
     margin-top: 20px;
@@ -172,7 +201,7 @@
   #footer button {
     margin-top: 8px;
     padding: 10px 20px;
-    border-radius: 8px;
+    border-radius: 15px;
     background-color: var(--btn-bg);
     border: none;
     color: white;
@@ -225,44 +254,47 @@
   <div><b>«Ah! Margo! Cake SPb»</b></div>
   <button onclick="openTelegramChannel()">Перейти в Telegram-канал</button>
 </div>
-
+<button id="scrollTopBtn" title="Наверх">↑</button>
 <script>
   const TELEGRAM_USERNAME = "Ahmargo_cakespb";
 
   const items = [
     { id: "1", category: "Торты", name: "ТРИ ШОКОЛАДА", 
       description: "• Шоколадно-миндальный бисквит<br>• Сливочный мусс на основе белого бельгийского шоколада<br>• Сливочный мусс на основе молочного шоколада<br>• Сливочный мусс на основе тёмного шоколада<br>• Зеркальная глазурь или шоковелюр", 
-      price: "10 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+      price: "10 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/ТРИ%20ШОКОЛАДА.jpg" },
     { id: "2", category: "Торты", name: "Королевская Диабелла", 
       description: "• Шоколадно-миндальный бисквит<br>• Ганаш на молочном шоколаде с кусочками бисквита и цельного фундука<br>• Баварский мусс на основе белого шоколада и фундучной пасты<br>• Зеркальная глазурь или шоколадный велюр", 
-      price: "90 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+      price: "90 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/«КОРОЛЕВСКАЯ%20ДИАБЕЛЛА».jpg" },
     { id: "3", category: "Торты", name: "Пряная морковь/апельсин", 
       description: "• Морковный пряный бисквит с грецким орехом, корицей, имбирем, мускатным орехом и цедрой апельсина<br>• Апельсиновое компоте<br>• Мусс на основе сливочного сыра<br>• Зеркальная глазурь или шоковелюр", 
-      price: "90 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+      price: "90 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/«ПРЯНАЯ%20МОРКОВЬ-АПЕЛЬСИН».jpg" },
     { id: "4", category: "Торты", name: "Черный лес", 
       description: "• Шоколадно-миндальный бисквит<br>• Вишнёвое компоте<br>• Вишневый мусс с кусочками тёмного бельгийского шоколада<br>• Сливочный мусс<br>• Зеркальная глазурь или шоколадный велюр", 
-      price: "90 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+      price: "90 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/«ЧЕРНЫЙ%20ЛЕС».jpg" },
     { id: "5", category: "Торты", name: "Сливочная черника", 
       description: "• Черничное конфи<br>• Карамельная Намелака (нежнейший сливочно-шоколадно-карамельный крем)<br>• Дакуаз с ягодами черники (легкий воздушный бисквит без добавления жиров на ореховой муке с ягодами черники)<br>• Сливочный Мусс<br>• Зеркальная глазурь или Шоколадный велюр", 
-      price: "90 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+      price: "90 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/«СЛИВОЧНАЯ%20ЧЕРНИКА».jpg" },
     { id: "6", category: "Моти", name: "Черничный йогурт", 
       description: "Нежнейший крем на основе греческого йогурта, творожного сыра и спелой черники", 
-      price: "250 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+      price: "250 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/Моти%20«Черничный%20Йогурт».jpg" },
     { id: "7", category: "Моти", name: "Малина-фисташка", 
       description: "Фисташковое кремю, нежнейший сливочно-малиновый крем, заварное японское тесто на рисовой муке", 
-      price: "250 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+      price: "250 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/Моти%20«Малина-фисташка».jpg" },
     { id: "8", category: "Моти", name: "Love is… (клубника/банан)", 
       description: "Вкус навеен легендарной жевательной резинкой 90х. Клубничный центр клубника 🍓 банановый крем 🍌 и тянущееся рисовое тесто 👌", 
-      price: "250 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+      price: "250 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/Моти%20«love%20is…».jpg" },
     { id: "9", category: "Моти", name: "Пина Колада (ананас/кокос)", 
       description: "Два сливочных крема: ананасовый 🍍 и кокосовый 🥥 объединяются в бомбический тандем знаменитого коктейля коктейль 🍸 🍹 🍸 🍹", 
-      price: "250 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+      price: "250 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/Моти%20«Пина%20Колада».jpg" },
     { id: "10", category: "Пирожные", name: "«Картошка» 6 шт", 
       description: "Легендарное пирожное «Картошка».<br>От классического пирожного она отличается….. всем))))<br>Насыщенный, влажный бисквит из миндальной муки и элитного французского черного какао, которое придает яркий вкус какао-бобов. Формуется «картошка» с помощью нежного сливочно-молочного соуса. А снаружи пирожное покрыто хрустящей корочкой из итальянского шоколада.", 
-      price: "900 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" },
+      price: "900 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/«Картошка».jpg" },
     { id: "11", category: "Пирожные", name: "«Картошка» 12 шт", 
       description: "Легендарное пирожное «Картошка».<br>От классического пирожного она отличается….. всем))))<br>Насыщенный, влажный бисквит из миндальной муки и элитного французского черного какао, которое придает яркий вкус какао-бобов. Формуется «картошка» с помощью нежного сливочно-молочного соуса. А снаружи пирожное покрыто хрустящей корочкой из итальянского шоколада.", 
-      price: "1800 ₽", image: "https://sun9-55.userapi.com/impg/Qu8bWmXxJQZIti5bDfebr6lJnf8XcTdZ5Gv3kg/8a73ZrZqYIk.jpg?size=604x604&quality=95&sign=1528701276b7d3b5f9eef97e4d8be2b2&type=album" }
+      price: "1800 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/«Картошка».jpg" },
+    { id: "12", category: "Торты", name: "«Фисташка-Малина»", 
+      description: "Фисташковый бисквит<br>• Малиновый мармелад<br>• Малиновый мусс<br>• Фисташковый мусс", 
+      price: "1800 ₽", image: "https://raw.githubusercontent.com/tk6vn/catalog_tg/refs/heads/images/«Фисташка-Малина».jpg" }
     // ... остальные товары
   ];
 
@@ -337,9 +369,20 @@
 
   fillCategories();
   renderCatalog();
+const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 300) {
+    scrollTopBtn.classList.add("show");
+  } else {
+    scrollTopBtn.classList.remove("show");
+  }
+});
+
+scrollTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
 </script>
 
 </body>
 </html>
-
-
