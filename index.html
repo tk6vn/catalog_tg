@@ -3,233 +3,242 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Каталог</title>
+<title>Каталог десертов</title>
 <style>
-  body {
-    font-family: Gill Sans, sans-serif;
-    margin: 0; padding: 11px;
-    background-color: var(--bg);
-    color: var(--text);
+  /* 🌸 Палитра */
+  :root {
+    --bg: #fff8f6;
+    --text: #443;
+    --card-bg: #ffffff;
+    --btn-bg: #f28bb5;
+    --btn-hover: #e06797;
+    --border-color: #f1d5e6;
+    --accent: #eab8d0;
   }
 
-  :root {
-    --bg: #ffe1d6;
-    --text: #222;
-    --card-bg: #fff;
-    --btn-bg: #0088cc;
-    --btn-hover: #0077b3;
-    --border-color: #ccc;
+  body {
+    font-family: "Segoe UI", sans-serif;
+    margin: 0; 
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
   }
 
   h1 {
     text-align: center;
-    margin-bottom: 15px;
+    padding: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #d65a91;
   }
 
+  /* Категории */
   .controls {
     display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+    justify-content: center;
+    margin: 0 auto 25px;
+    padding: 10px;
   }
 
   select {
     flex-grow: 1;
     min-width: 100px;
     max-width: 500px;
-    padding: 10px;
+    padding: 10px 15px;
+    border-radius: 12px;
+    border: 1px solid var(--accent);
     font-size: 16px;
-    border: 1px solid var(--border-color);
-    border-radius: 15px;
-    background-color: #ffffff;
+    background: #fff;
     color: var(--text);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
 
+  /* Сетка товаров */
   #catalog {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    margin-bottom: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 25px;
+    padding: 0 20px 40px;
   }
 
   .item {
     background: var(--card-bg);
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    padding: 14px;
+    text-align: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
     cursor: pointer;
-    transition: transform 0.2s ease;
   }
-
   .item:hover {
-    transform: scale(1.03);
+    transform: translateY(-5px);
+    box-shadow: 0 14px 30px rgba(0,0,0,0.12);
   }
 
   .item img {
     width: 100%;
-    border-radius: 15px;
+    border-radius: 12px;
     object-fit: cover;
-    aspect-ratio: 5 / 3;
+    aspect-ratio: 1/1;
     margin-bottom: 12px;
   }
 
-  .item h3 {
-    margin: 0 0 6px;
-    font-size: 16px;
-    text-align: center; /* центрируем текст в своём блоке */
-    flex: 1; /* даём занять всё свободное место */
-  }
-
-  .item p {
-    font-size: 14px;
-    flex-grow: 1;
-    margin-bottom: 8px;
-  }
-
-  .price {
-    font-weight: 700;
-    color: #000000;
-    margin-bottom: 10px;
-    font-size: 16px;
-    text-align: right;
-  }
-
-  /* Модалка */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    backdrop-filter: blur(5px);
-    background-color: rgba(0,0,0,0.5);
-    justify-content: center;
+  .item-header {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
   }
 
-  .modal-content {
-    background: white;
-    border-radius: 15px;
-    max-width: 80%;
-    width: 400px;
-    padding: 20px;
-    position: relative;
+  .item-header h3 {
+    font-size: 16px;
+    margin: 0;
+    flex: 1;
+    text-align: left;
+    color: #444;
+  }
+
+  .price {
+    font-weight: bold;
+    font-size: 15px;
+    color: #d65a91;
+    margin-left: 10px;
+  }
+
+  /* 🌟 Модальное окно */
+  #modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
     animation: fadeIn 0.3s ease;
   }
-
-  .modal-content img {
+  #modal-content {
+    background: var(--card-bg);
+    border-radius: 18px;
+    padding: 20px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    position: relative;
+    animation: popIn 0.35s ease;
+  }
+  #modal img {
     width: 100%;
-    border-radius: 15px;
-    margin-bottom: 12px;
+    border-radius: 12px;
+    margin-bottom: 15px;
   }
-
-  .close-btn {
-    position: absolute;
-    right: 12px;
-    top: 8px;
-    font-size: 26px;
-    cursor: pointer;
-  }
-
-  #modal-title {
+  #modal h2 {
+    margin: 0 0 10px;
     text-align: center;
-    margin: 10px 0 0;
+    color: #d65a91;
   }
   #modal-description {
-    white-space: normal; /* переносы по <br> будут работать */
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: normal;
+    color: #555;
   }
-
-  #modal-price {
-    font-weight: bold;
-    margin-bottom: 12px;
-    text-align: right;
-  }
-
-  #modal-order {
-    background-color: var(--btn-bg);
-    border: none;
-    border-radius: 15px;
-    color: white;
-    padding: 10px 0;
-    width: 100%;
-    font-size: 16px;
+  #closeModal {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    font-size: 20px;
     cursor: pointer;
+    color: #ffffff;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f28bb5;
+    display: flex;
+    align-items: revert;
+    justify-content: center;
+    transition: background 0.3s ease, color 0.3s ease;
   }
-
-  #modal-order:hover {
-    background-color: var(--btn-hover);
+  #closeModal:hover {
+    background: #dcdcdc;
+    color: #d65a91;
   }
-
+  #orderBtn {
+    margin-top: 15px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    background: var(--btn-bg);
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #orderBtn:hover {
+    background: var(--btn-hover);
+  }
   @keyframes fadeIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
   }
 
+  /* 🔝 Кнопка наверх */
   #scrollTopBtn {
     position: fixed;
-    bottom: 40px;
-    right: 40px;
-    z-index: 1000;
-    background-color: #c2deeb96;
+    bottom: 25px;
+    right: 25px;
+    background: var(--btn-bg);
     color: white;
     border: none;
     border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    font-size: 24px;
+    width: 50px;
+    height: 50px;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-    transition: opacity 0.3s ease;
-    opacity: 0;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    opacity: 1;
     pointer-events: none;
+    transition: opacity 0.3s ease;
   }
-
   #scrollTopBtn.show {
     opacity: 1;
     pointer-events: auto;
   }
 
+  /* Футер */
   #footer {
     text-align: center;
-    margin-top: 20px;
-    font-size: 15px;
+    padding: 20px;
+    background: #fff0f6;
+    border-top: 1px solid var(--accent);
+    font-size: 14px;
     color: #555;
   }
-
   #footer button {
-    margin-top: 8px;
+    margin-top: 10px;
     padding: 10px 20px;
-    border-radius: 15px;
-    background-color: var(--btn-bg);
+    border-radius: 12px;
     border: none;
-    color: white;
+    background: var(--btn-bg);
+    color: #fff;
     cursor: pointer;
+    transition: background 0.3s ease;
   }
-
   #footer button:hover {
-    background-color: var(--btn-hover);
-  }
-
-  @media (max-width: 768px) {
-    #catalog {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-    }
-  }
-  @media (max-width: 480px) {
-    #catalog {
-      grid-template-columns: 1fr;
-      gap: 18px;
-    }
+    background: var(--btn-hover);
   }
 </style>
 </head>
 <body>
 
-<h1>Ah! Margo! Cake SPb</h1>
+<h1>🍰 Ah! Margo! Cake SPb</h1>
 
 <div class="controls">
   <select id="category">
@@ -237,25 +246,27 @@
   </select>
 </div>
 
-<div id="catalog">Загрузка...</div>
+<div id="catalog"></div>
 
-<!-- Модальное окно -->
-<div id="modal" class="modal">
-  <div class="modal-content">
-    <span class="close-btn">&times;</span>
-    <img id="modal-image" src="" alt="" />
-    <h3 id="modal-title"></h3>
-    <p id="modal-description"></p>
-    <div id="modal-price"></div>
-    <button id="modal-order">Заказать</button>
+<!-- 🌟 Модальное окно -->
+<div id="modal">
+  <div id="modal-content">
+    <span id="closeModal">&times;</span>
+    <img id="modal-img" src="" alt="">
+    <h2 id="modal-title"></h2>
+    <div id="modal-description"></div>
+    <div id="modal-description"></div>
+    <button id="orderBtn">Заказать</button>
   </div>
 </div>
+
+<button id="scrollTopBtn">↑</button>
 
 <div id="footer">
   <div><b>«Ah! Margo! Cake SPb»</b></div>
   <button onclick="openTelegramChannel()">Перейти в Telegram-канал</button>
 </div>
-<button id="scrollTopBtn" title="Наверх">↑</button>
+
 <script>
   const TELEGRAM_USERNAME = "Ahmargo_cakespb";
 
@@ -321,77 +332,66 @@
     const catalogDiv = document.getElementById("catalog");
     catalogDiv.innerHTML = "";
 
-    let filtered = items.filter(i => (!category || i.category === category));
-
-    if (filtered.length === 0) {
-      catalogDiv.innerHTML = "<p>Ничего не найдено.</p>";
-      return;
-    }
+    let filtered = items.filter(i => !category || i.category === category);
 
     filtered.forEach(i => {
       const div = document.createElement("div");
       div.className = "item";
       div.innerHTML = `
-        <img src="${i.image}" alt="${i.name}" loading="lazy" />
+        <img src="${i.image}" alt="${i.name}" />
         <div class="item-header">
           <h3>${i.name}</h3>
           <div class="price">${i.price}</div>
         </div>
-
       `;
       div.addEventListener("click", () => openModal(i));
       catalogDiv.appendChild(div);
     });
   }
 
+  // 🌟 Модалка
   function openModal(item) {
-    document.getElementById("modal-image").src = item.image;
+    document.getElementById("modal-img").src = item.image;
     document.getElementById("modal-title").textContent = item.name;
     document.getElementById("modal-description").innerHTML = item.description;
-    document.getElementById("modal-price").textContent = item.price;
-    document.getElementById("modal-order").onclick = () => orderItem(item.name);
-    document.getElementById("modal").style.display = "flex";
-  }
-
-  document.querySelector(".close-btn").addEventListener("click", () => {
+    document.getElementById("closeModal").addEventListener("click", () => {
     document.getElementById("modal").style.display = "none";
   });
 
+  // Дополнительно: закрытие по клику на фон (чтобы было удобно)
   document.getElementById("modal").addEventListener("click", (e) => {
     if (e.target.id === "modal") {
       document.getElementById("modal").style.display = "none";
     }
   });
-
-  function orderItem(name) {
-    const message = encodeURIComponent(`Здравствуйте! Хочу заказать: ${name}`);
+  // Привязываем кнопку заказа
+  const orderBtn = document.getElementById("orderBtn");
+  orderBtn.onclick = () => {
+    const message = encodeURIComponent(`Здравствуйте! Хочу заказать: ${item.name}`);
     window.open(`https://t.me/${TELEGRAM_USERNAME}?text=${message}`, "_blank");
-  }
+  };
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+
+  // 🔝 Кнопка наверх
+  const scrollBtn = document.getElementById("scrollTopBtn");
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) scrollBtn.classList.add("show");
+    else scrollBtn.classList.remove("show");
+  });
+  scrollBtn.addEventListener("click", () => {
+    window.scrollTo({top:0, behavior:"smooth"});
+  });
 
   function openTelegramChannel() {
     window.open(`https://t.me/ahmargo_cake`, "_blank");
   }
 
-  document.getElementById("category").addEventListener("change", renderCatalog);
-
+  // Запуск
   fillCategories();
   renderCatalog();
-const scrollTopBtn = document.getElementById("scrollTopBtn");
-
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 300) {
-    scrollTopBtn.classList.add("show");
-  } else {
-    scrollTopBtn.classList.remove("show");
-  }
-});
-
-scrollTopBtn.addEventListener("click", () => {
-  window.scrollTo({ top: 0, behavior: "smooth" });
-});
 </script>
-
 </body>
 </html>
-
-
