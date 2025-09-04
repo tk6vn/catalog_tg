@@ -1,690 +1,534 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TON Автоматическая проверка кошельков</title>
+  <title>TON Wallet Scanner - by tk6vn</title>
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
     body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 30px;
-      margin: 0;
-    }
-    h1 { color: #2c3e50; }
-    .auto-mode {
-      background: #fff;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 600px;
-      margin-bottom: 20px;
+      color: #333;
     }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background: #3498db;
-      color: #fff;
+    
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      margin: 20px 0;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+      font-weight: 600;
+    }
+    
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    
+    .content {
+      padding: 25px;
+    }
+    
+    .stats-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    
+    .stat-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      border-left: 4px solid #3498db;
+    }
+    
+    .stat-card h3 {
+      font-size: 14px;
+      color: #6c757d;
+      margin-bottom: 8px;
+    }
+    
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    
+    .current-data {
+      background: #e8f4fc;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      border: 1px solid #bee5eb;
+    }
+    
+    .current-data h3 {
+      color: #0c5460;
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+    
+    .data-item {
+      margin-bottom: 12px;
+    }
+    
+    .data-item label {
+      font-weight: 600;
+      color: #0c5460;
+      display: block;
+      margin-bottom: 5px;
+    }
+    
+    .data-item .value {
+      background: white;
+      padding: 10px;
+      border-radius: 6px;
+      font-family: monospace;
+      word-break: break-all;
+      border: 1px solid #bee5eb;
+    }
+    
+    .balance-value {
+      color: #28a745;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+      justify-content: center;
+    }
+    
+    .btn {
+      padding: 12px 25px;
       border: none;
       border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
-      margin: 5px;
+      transition: all 0.3s ease;
     }
-    button:hover { background: #2980b9; }
-    button:disabled {
-      background: #95a5a6;
+    
+    .btn-start {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+    }
+    
+    .btn-stop {
+      background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+      color: white;
+    }
+    
+    .btn:disabled {
+      opacity: 0.6;
       cursor: not-allowed;
     }
-    .stats {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #7f8c8d;
+    
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
+    
+    .status {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    
+    .status-running {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-stopped {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
     .found-wallets {
-      margin-top: 20px;
+      margin-top: 25px;
+    }
+    
+    .found-wallets h3 {
+      color: #2c3e50;
+      margin-bottom: 15px;
+      font-size: 20px;
+      text-align: center;
+    }
+    
+    .wallets-list {
       max-height: 300px;
       overflow-y: auto;
-      border: 1px solid #ddd;
-      padding: 10px;
-      border-radius: 5px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 15px;
     }
+    
     .wallet-item {
-      margin-bottom: 10px;
-      padding: 10px;
-      background: #f9f9f9;
-      border-radius: 5px;
-      border-left: 4px solid #2ecc71;
-    }
-    .current-phrase {
-      margin: 15px 0;
-      padding: 10px;
       background: #f8f9fa;
+      padding: 15px;
       border-radius: 8px;
-      border: 1px dashed #ccc;
+      margin-bottom: 12px;
+      border-left: 4px solid #28a745;
     }
-    .current-phrase-text {
-      font-family: monospace;
-      word-break: break-all;
+    
+    .wallet-item p {
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    
+    .wallet-mnemonic {
       color: #e74c3c;
-    }
-    .wallet-info {
-      margin: 15px 0;
-      padding: 10px;
-      background: #e8f4fc;
-      border-radius: 8px;
-      border: 1px solid #3498db;
-    }
-    .wallet-info p {
-      margin: 5px 0;
-    }
-    .wallet-address {
-      font-weight: bold;
-      color: #16a085;
+      font-family: monospace;
       word-break: break-all;
+    }
+    
+    .wallet-address {
+      color: #16a085;
       font-family: monospace;
     }
+    
     .wallet-balance {
-      font-weight: bold;
       color: #8e44ad;
+      font-weight: bold;
     }
+    
     .last-update {
+      text-align: center;
+      margin-top: 15px;
       font-size: 12px;
-      color: #7f8c8d;
-      margin-top: 10px;
+      color: #6c757d;
     }
-    .config-section {
-      margin: 15px 0;
-      padding: 15px;
-      background: #fff8e1;
+    
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
       border-radius: 8px;
-      border: 1px solid #ffd54f;
+      color: white;
+      font-weight: 600;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
     }
-    .manual-section {
-      margin: 15px 0;
-      padding: 15px;
-      background: #e8f5e9;
-      border-radius: 8px;
-      border: 1px solid #66bb6a;
+    
+    .notification.show {
+      opacity: 1;
+      transform: translateX(0);
     }
-    input[type="text"], input[type="password"], textarea {
-      width: 100%;
-      padding: 8px;
-      margin: 5px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
+    
+    .notification-success {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     }
-    textarea {
-      height: 80px;
-      resize: vertical;
+    
+    .notification-error {
+      background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
     }
-    .github-status {
-      margin-top: 10px;
-      font-size: 14px;
-    }
-    .test-buttons {
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .error {
-      color: red;
-      font-size: 14px;
-      margin-top: 5px;
+    
+    @media (max-width: 600px) {
+      .stats-panel {
+        grid-template-columns: 1fr;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>TON Автоматическая проверка кошельков</h1>
-  
-  <div class="auto-mode">
-    <h2>Автоматический режим</h2>
-    
-    <div class="config-section">
-      <h3>Настройки GitHub</h3>
-      <p>Для сохранения результатов в файл на GitHub:</p>
-      <div>
-        <label>GitHub Token:</label>
-        <input type="password" id="githubToken" placeholder="Введите ваш GitHub Personal Access Token">
-      </div>
-      <div>
-        <label>Имя репозитория (username/repo):</label>
-        <input type="text" id="githubRepo" placeholder="например, myusername/ton-wallets">
-      </div>
-      <div>
-        <label>Имя файла для сохранения:</label>
-        <input type="text" id="githubFilename" value="found_wallets.json" placeholder="found_wallets.json">
-      </div>
-      <div class="test-buttons">
-        <button id="saveConfigBtn">Сохранить настройки</button>
-        <button id="testGitHubBtn">Проверить подключение</button>
-      </div>
-      <div id="githubStatus" class="github-status"></div>
-      <div id="githubError" class="error"></div>
-    </div>
-
-    <div class="manual-section">
-      <h3>Ручная проверка фразы</h3>
-      <div>
-        <label>Мнемоническая фраза (12-24 слова):</label>
-        <textarea id="manualPhrase" placeholder="Введите мнемоническую фразу для проверки"></textarea>
-      </div>
-      <button id="checkManualBtn">Проверить вручную</button>
-      <div id="manualResult" class="github-status"></div>
+  <div class="container">
+    <div class="header">
+      <h1>TON Wallet Scanner</h1>
+      <p>by tk6vn • Automated wallet generator and balance checker</p>
     </div>
     
-    <button id="startAutoBtn">Запустить автоматическую генерацию</button>
-    <button id="stopAutoBtn" disabled>Остановить</button>
-    
-    <div class="current-phrase">
-      <p><strong>Текущая проверяемая фраза:</strong></p>
-      <div id="currentPhrase" class="current-phrase-text">Не активен</div>
-    </div>
-    
-    <div class="wallet-info">
-      <p><strong>Адрес кошелька:</strong></p>
-      <div id="walletAddress" class="wallet-address">-</div>
-      <p><strong>Баланс:</strong> <span id="walletBalance">-</span> TON</p>
-    </div>
-    
-    <div class="stats">
-      <p>Сгенерировано кошельков: <span id="generatedCount">0</span></p>
-      <p>Проверено вручную: <span id="manualCheckedCount">0</span></p>
-      <p>Найдено с балансом: <span id="foundCount">0</span></p>
-      <p>Статус: <span id="status">Остановлено</span></p>
-      <p class="last-update">Последнее обновление: <span id="lastUpdate">-</span></p>
-    </div>
-    
-    <div id="foundWallets" class="found-wallets" style="display: none;">
-      <h3>Найденные кошельки с балансом:</h3>
+    <div class="content">
+      <div class="stats-panel">
+        <div class="stat-card">
+          <h3>WALLETS GENERATED</h3>
+          <div class="value" id="generatedCount">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>WALLETS WITH BALANCE</h3>
+          <div class="value" id="foundCount">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>STATUS</h3>
+          <div class="value" id="statusText">STOPPED</div>
+        </div>
+      </div>
+      
+      <div class="current-data">
+        <h3>Current Wallet Information</h3>
+        <div class="data-item">
+          <label>MNEMONIC PHRASE</label>
+          <div class="value" id="currentPhrase">Not active</div>
+        </div>
+        <div class="data-item">
+          <label>WALLET ADDRESS</label>
+          <div class="value" id="walletAddress">-</div>
+        </div>
+        <div class="data-item">
+          <label>BALANCE</label>
+          <div class="value"><span id="walletBalance" class="balance-value">-</span> TON</div>
+        </div>
+      </div>
+      
+      <div class="controls">
+        <button class="btn btn-start" id="startBtn">START SCANNING</button>
+        <button class="btn btn-stop" id="stopBtn" disabled>STOP SCANNING</button>
+      </div>
+      
+      <div class="status status-stopped" id="statusMessage">
+        Scanner is stopped. Press START to begin.
+      </div>
+      
+      <div class="last-update">
+        Last update: <span id="lastUpdate">-</span>
+      </div>
+      
+      <div class="found-wallets">
+        <h3>FOUND WALLETS WITH BALANCE</h3>
+        <div class="wallets-list" id="walletsList">
+          <p style="text-align: center; color: #6c757d;">No wallets with balance found yet</p>
+        </div>
+      </div>
     </div>
   </div>
+
+  <div class="notification" id="notification"></div>
 
   <script type="module">
     import { mnemonicToWalletKey, mnemonicNew } from "https://esm.sh/@ton/crypto";
     import { WalletContractV4 } from "https://esm.sh/@ton/ton";
 
-    const startAutoBtn = document.getElementById("startAutoBtn");
-    const stopAutoBtn = document.getElementById("stopAutoBtn");
-    const saveConfigBtn = document.getElementById("saveConfigBtn");
-    const testGitHubBtn = document.getElementById("testGitHubBtn");
-    const checkManualBtn = document.getElementById("checkManualBtn");
-    const generatedCountEl = document.getElementById("generatedCount");
-    const manualCheckedCountEl = document.getElementById("manualCheckedCount");
-    const foundCountEl = document.getElementById("foundCount");
-    const statusEl = document.getElementById("status");
-    const foundWalletsEl = document.getElementById("foundWallets");
-    const currentPhraseEl = document.getElementById("currentPhrase");
-    const walletAddressEl = document.getElementById("walletAddress");
-    const walletBalanceEl = document.getElementById("walletBalance");
-    const lastUpdateEl = document.getElementById("lastUpdate");
-    const githubTokenEl = document.getElementById("githubToken");
-    const githubRepoEl = document.getElementById("githubRepo");
-    const githubFilenameEl = document.getElementById("githubFilename");
-    const githubStatusEl = document.getElementById("githubStatus");
-    const githubErrorEl = document.getElementById("githubError");
-    const manualPhraseEl = document.getElementById("manualPhrase");
-    const manualResultEl = document.getElementById("manualResult");
+    // Elements
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const generatedCountEl = document.getElementById('generatedCount');
+    const foundCountEl = document.getElementById('foundCount');
+    const statusTextEl = document.getElementById('statusText');
+    const statusMessageEl = document.getElementById('statusMessage');
+    const currentPhraseEl = document.getElementById('currentPhrase');
+    const walletAddressEl = document.getElementById('walletAddress');
+    const walletBalanceEl = document.getElementById('walletBalance');
+    const lastUpdateEl = document.getElementById('lastUpdate');
+    const walletsListEl = document.getElementById('walletsList');
+    const notificationEl = document.getElementById('notification');
 
-    let isAutoModeRunning = false;
+    // State
+    let isScanning = false;
     let generatedCount = 0;
-    let manualCheckedCount = 0;
     let foundCount = 0;
     let foundWallets = [];
-    let currentAddress = "";
-    let githubConfig = {
-      token: "",
-      repo: "",
-      filename: "found_wallets.json"
-    };
 
-    // Прокси для обхода CORS
-    const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
-    
-    // Альтернативный прокси
-    const CORS_PROXY_2 = "https://api.codetabs.com/v1/proxy?quest=";
-
-    // Загрузка конфигурации при запуске
-    function loadConfig() {
-      const savedConfig = localStorage.getItem('githubConfig');
-      if (savedConfig) {
-        githubConfig = JSON.parse(savedConfig);
-        githubTokenEl.value = githubConfig.token;
-        githubRepoEl.value = githubConfig.repo;
-        githubFilenameEl.value = githubConfig.filename;
+    // Load saved data
+    function loadSavedData() {
+      const savedData = localStorage.getItem('tonScannerData');
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        generatedCount = data.generatedCount || 0;
+        foundCount = data.foundCount || 0;
+        foundWallets = data.foundWallets || [];
+        
+        generatedCountEl.textContent = generatedCount.toLocaleString();
+        foundCountEl.textContent = foundCount.toLocaleString();
+        
+        updateWalletsList();
       }
     }
 
-    // Сохранение конфигурации
-    saveConfigBtn.addEventListener("click", () => {
-      githubConfig = {
-        token: githubTokenEl.value,
-        repo: githubRepoEl.value,
-        filename: githubFilenameEl.value
+    // Save data
+    function saveData() {
+      const data = {
+        generatedCount,
+        foundCount,
+        foundWallets,
+        lastUpdate: new Date().toISOString()
       };
-      localStorage.setItem('githubConfig', JSON.stringify(githubConfig));
-      githubStatusEl.textContent = "Настройки сохранены!";
-      githubStatusEl.style.color = "green";
-      githubErrorEl.textContent = "";
+      localStorage.setItem('tonScannerData', JSON.stringify(data));
+      updateLastUpdateTime();
+    }
+
+    // Show notification
+    function showNotification(message, isSuccess = true) {
+      notificationEl.textContent = message;
+      notificationEl.className = `notification ${isSuccess ? 'notification-success' : 'notification-error'}`;
+      notificationEl.classList.add('show');
       
       setTimeout(() => {
-        githubStatusEl.textContent = "";
+        notificationEl.classList.remove('show');
       }, 3000);
-    });
-
-    // Функция для работы с GitHub API через прокси
-    async function githubApiRequest(url, options = {}) {
-      try {
-        // Пробуем разные прокси
-        const proxies = [CORS_PROXY_2, CORS_PROXY];
-        
-        for (const proxy of proxies) {
-          try {
-            const proxyUrl = proxy + url;
-            const response = await fetch(proxyUrl, {
-              ...options,
-              headers: {
-                ...options.headers,
-                'Accept': 'application/vnd.github.v3+json'
-              }
-            });
-            
-            if (response.ok) {
-              return response;
-            }
-          } catch (e) {
-            console.log(`Прокси ${proxy} не сработал, пробуем следующую`);
-          }
-        }
-        
-        throw new Error('Все прокси не сработали');
-      } catch (error) {
-        console.error('Ошибка GitHub API:', error);
-        throw error;
-      }
     }
 
-    // Проверка подключения к GitHub
-    testGitHubBtn.addEventListener("click", async () => {
-      if (!githubConfig.token || !githubConfig.repo) {
-        githubStatusEl.textContent = "Сначала настройте GitHub!";
-        githubStatusEl.style.color = "red";
-        return;
-      }
-
-      try {
-        githubStatusEl.textContent = "Проверяем подключение...";
-        githubStatusEl.style.color = "blue";
-        githubErrorEl.textContent = "";
-
-        const url = `https://api.github.com/repos/${githubConfig.repo}`;
-        const response = await githubApiRequest(url, {
-          headers: {
-            'Authorization': `token ${githubConfig.token}`
-          }
-        });
-
-        if (response.ok) {
-          githubStatusEl.textContent = "Подключение к GitHub успешно!";
-          githubStatusEl.style.color = "green";
-        } else {
-          const errorData = await response.text();
-          githubStatusEl.textContent = "Ошибка подключения к GitHub!";
-          githubStatusEl.style.color = "red";
-          githubErrorEl.textContent = `Статус: ${response.status}. ${errorData}`;
-        }
-      } catch (error) {
-        githubStatusEl.textContent = "Ошибка подключения к GitHub!";
-        githubStatusEl.style.color = "red";
-        githubErrorEl.textContent = error.message;
-      }
-
-      setTimeout(() => {
-        githubStatusEl.textContent = "";
-      }, 5000);
-    });
-
-    // Проверка ручной фразы
-    checkManualBtn.addEventListener("click", async () => {
-      const phrase = manualPhraseEl.value.trim();
-      if (!phrase) {
-        manualResultEl.textContent = "Введите мнемоническую фразу!";
-        manualResultEl.style.color = "red";
-        return;
-      }
-
-      try {
-        manualResultEl.textContent = "Проверяем...";
-        manualResultEl.style.color = "blue";
-
-        const mnemonic = phrase.split(/\s+/);
-        const keyPair = await mnemonicToWalletKey(mnemonic);
-
-        const wallet = WalletContractV4.create({
-          workchain: 0,
-          publicKey: keyPair.publicKey,
-        });
-
-        const address = wallet.address.toString();
-        
-        // Получаем баланс
-        const balanceUrl = `https://toncenter.com/api/v2/getAddressInformation?address=${address}`;
-        const res = await fetch(balanceUrl);
-        const data = await res.json();
-
-        let balance = 0;
-        if (data.ok) {
-          balance = parseInt(data.result.balance, 10) / 1e9;
-        }
-
-        manualCheckedCount++;
-        manualCheckedCountEl.textContent = manualCheckedCount;
-
-        if (balance > 0) {
-          manualResultEl.textContent = `Найден баланс: ${balance} TON!`;
-          manualResultEl.style.color = "green";
-
-          const walletInfo = {
-            mnemonic: phrase,
-            address: address,
-            balance: balance,
-            timestamp: new Date().toISOString(),
-            source: "manual"
-          };
-
-          foundWallets.push(walletInfo);
-          await saveFoundWallet(walletInfo);
-        } else {
-          manualResultEl.textContent = "Баланс: 0 TON";
-          manualResultEl.style.color = "orange";
-        }
-      } catch (error) {
-        manualResultEl.textContent = "Ошибка при проверке фразы!";
-        manualResultEl.style.color = "red";
-        console.error(error);
-      }
-    });
-
-    // Функция для обновления времени последнего обновления
+    // Update last update time
     function updateLastUpdateTime() {
-      const now = new Date();
-      lastUpdateEl.textContent = now.toLocaleString();
+      lastUpdateEl.textContent = new Date().toLocaleString();
     }
 
-    // Запуск автоматического режима
-    startAutoBtn.addEventListener("click", () => {
-      if (!githubConfig.token || !githubConfig.repo) {
-        githubStatusEl.textContent = "Сначала настройте GitHub!";
-        githubStatusEl.style.color = "red";
+    // Update wallets list
+    function updateWalletsList() {
+      if (foundWallets.length === 0) {
+        walletsListEl.innerHTML = '<p style="text-align: center; color: #6c757d;">No wallets with balance found yet</p>';
         return;
       }
       
-      isAutoModeRunning = true;
-      startAutoBtn.disabled = true;
-      stopAutoBtn.disabled = false;
-      statusEl.textContent = "Выполняется...";
-      updateLastUpdateTime();
-      runAutoMode();
+      walletsListEl.innerHTML = '';
+      foundWallets.forEach(wallet => {
+        const walletItem = document.createElement('div');
+        walletItem.className = 'wallet-item';
+        walletItem.innerHTML = `
+          <p><strong>MNEMONIC:</strong> <span class="wallet-mnemonic">${wallet.mnemonic}</span></p>
+          <p><strong>ADDRESS:</strong> <span class="wallet-address">${wallet.address}</span></p>
+          <p><strong>BALANCE:</strong> <span class="wallet-balance">${wallet.balance} TON</span></p>
+          <p><strong>FOUND:</strong> ${new Date(wallet.timestamp).toLocaleString()}</p>
+        `;
+        walletsListEl.appendChild(walletItem);
+      });
+    }
+
+    // Start scanning
+    startBtn.addEventListener('click', () => {
+      isScanning = true;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      statusTextEl.textContent = 'SCANNING';
+      statusMessageEl.textContent = 'Scanner is running...';
+      statusMessageEl.className = 'status status-running';
+      
+      showNotification('Scanner started successfully!');
+      runScanner();
     });
 
-    // Остановка автоматического режима
-    stopAutoBtn.addEventListener("click", () => {
-      isAutoModeRunning = false;
-      startAutoBtn.disabled = false;
-      stopAutoBtn.disabled = true;
-      statusEl.textContent = "Остановлено";
-      currentPhraseEl.textContent = "Не активен";
-      walletAddressEl.textContent = "-";
-      walletBalanceEl.textContent = "-";
-      updateLastUpdateTime();
+    // Stop scanning
+    stopBtn.addEventListener('click', () => {
+      isScanning = false;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      statusTextEl.textContent = 'STOPPED';
+      statusMessageEl.textContent = 'Scanner is stopped. Press START to begin.';
+      statusMessageEl.className = 'status status-stopped';
+      currentPhraseEl.textContent = 'Not active';
+      walletAddressEl.textContent = '-';
+      walletBalanceEl.textContent = '-';
+      
+      showNotification('Scanner stopped.');
     });
 
-    // Функция автоматической генерации и проверки
-    async function runAutoMode() {
-      while (isAutoModeRunning) {
+    // Scanner function
+    async function runScanner() {
+      while (isScanning) {
         try {
-          await generateAndCheck();
-          // Небольшая задержка между запросами чтобы не перегружать API
+          // Generate new mnemonic
+          const mnemonic = await mnemonicNew(24);
+          const mnemonicPhrase = mnemonic.join(' ');
+          
+          // Display current phrase
+          currentPhraseEl.textContent = mnemonicPhrase;
+          
+          // Get keys from mnemonic
+          const keyPair = await mnemonicToWalletKey(mnemonic);
+          
+          // Create wallet
+          const wallet = WalletContractV4.create({
+            workchain: 0,
+            publicKey: keyPair.publicKey,
+          });
+          
+          const address = wallet.address.toString();
+          walletAddressEl.textContent = address;
+          
+          // Get balance
+          const balanceUrl = `https://toncenter.com/api/v2/getAddressInformation?address=${address}`;
+          const response = await fetch(balanceUrl);
+          const data = await response.json();
+          
+          let balance = 0;
+          if (data.ok) {
+            balance = parseInt(data.result.balance, 10) / 1e9;
+            walletBalanceEl.textContent = balance.toFixed(6);
+          }
+          
+          // Update counters
+          generatedCount++;
+          generatedCountEl.textContent = generatedCount.toLocaleString();
+          
+          // Check if wallet has balance
+          if (balance > 0) {
+            foundCount++;
+            foundCountEl.textContent = foundCount.toLocaleString();
+            
+            const walletInfo = {
+              mnemonic: mnemonicPhrase,
+              address: address,
+              balance: balance,
+              timestamp: new Date().toISOString()
+            };
+            
+            foundWallets.unshift(walletInfo); // Add to beginning of array
+            updateWalletsList();
+            saveData();
+            
+            showNotification(`Found wallet with ${balance} TON!`, true);
+          }
+          
+          // Save data periodically
+          if (generatedCount % 10 === 0) {
+            saveData();
+          }
+          
+          // Delay between requests
           await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (e) {
-          console.error("Ошибка в автоматическом режиме:", e);
-          // Продолжаем работу даже при ошибках
+          
+        } catch (error) {
+          console.error('Scanner error:', error);
+          walletBalanceEl.textContent = 'Error';
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
     }
 
-    // Генерация и проверка кошелька
-    async function generateAndCheck() {
-      const phrase = await generateWallet();
-      if (phrase && currentAddress) {
-        await checkBalance(phrase, currentAddress);
-      }
-    }
-
-    // Функция генерации кошелька
-    async function generateWallet() {
-      // Генерируем новую мнемоническую фразу (24 слова)
-      const mnemonic = await mnemonicNew(24);
-      const mnemonicPhrase = mnemonic.join(" ");
-      
-      // Отображаем текущую фразу в автоматическом режиме
-      currentPhraseEl.textContent = mnemonicPhrase;
-      
-      // Получаем ключи из мнемоники
-      const keyPair = await mnemonicToWalletKey(mnemonic);
-
-      // Создаём кошелёк версии 4
-      const wallet = WalletContractV4.create({
-        workchain: 0,
-        publicKey: keyPair.publicKey,
-      });
-      
-      currentAddress = wallet.address.toString();
-      
-      // Обновляем счетчик
-      generatedCount++;
-      generatedCountEl.textContent = generatedCount;
-      
-      // Обновляем адрес кошелька
-      walletAddressEl.textContent = currentAddress;
-      
-      return mnemonicPhrase;
-    }
-
-    // Функция проверки баланса
-    async function checkBalance(phrase, address) {
-      try {
-        // Получаем баланс через toncenter API
-        const url = `https://toncenter.com/api/v2/getAddressInformation?address=${address}`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (data.ok) {
-          const balance = parseInt(data.result.balance, 10) / 1e9;
-          
-          // Обновляем отображение баланса
-          walletBalanceEl.textContent = balance.toFixed(6);
-          
-          // Если баланс больше 0, сохраняем информацию
-          if (balance > 0) {
-            foundCount++;
-            foundCountEl.textContent = foundCount;
-            
-            const walletInfo = {
-              mnemonic: phrase,
-              address: address,
-              balance: balance,
-              timestamp: new Date().toISOString(),
-              source: "auto"
-            };
-            
-            foundWallets.push(walletInfo);
-            await saveFoundWallet(walletInfo);
-            
-            // Показываем уведомление
-            alert(`Найден кошелёк с балансом! ${balance} TON`);
-          }
-          
-          return balance;
-        } else {
-          walletBalanceEl.textContent = "0 (ошибка API)";
-          return 0;
-        }
-      } catch (e) {
-        console.error(e);
-        walletBalanceEl.textContent = "0 (ошибка)";
-        return 0;
-      }
-    }
-
-    // Сохранение найденного кошелька
-    async function saveFoundWallet(walletInfo) {
-      // Показываем блок с найденными кошельками
-      foundWalletsEl.style.display = "block";
-      
-      // Добавляем кошелёк в список
-      const walletItem = document.createElement("div");
-      walletItem.className = "wallet-item";
-      walletItem.innerHTML = `
-        <p><strong>Мнемоника:</strong> ${walletInfo.mnemonic}</p>
-        <p><strong>Адрес:</strong> ${walletInfo.address}</p>
-        <p><strong>Баланс:</strong> ${walletInfo.balance} TON</p>
-        <p><strong>Найдено:</strong> ${new Date(walletInfo.timestamp).toLocaleString()}</p>
-        <p><strong>Источник:</strong> ${walletInfo.source === 'manual' ? 'Ручная проверка' : 'Автоматическая проверка'}</p>
-      `;
-      foundWalletsEl.appendChild(walletItem);
-      
-      // Сохраняем в GitHub
-      await saveToGitHub(walletInfo);
-      
-      // Обновляем время последнего обновления
-      updateLastUpdateTime();
-    }
-
-    // Сохранение в GitHub
-    async function saveToGitHub(walletInfo) {
-      try {
-        // Получаем текущее содержимое файла
-        const getUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${githubConfig.filename}`;
-        const getResponse = await githubApiRequest(getUrl, {
-          headers: {
-            'Authorization': `token ${githubConfig.token}`
-          }
-        });
-        
-        let currentContent = [];
-        let sha = null;
-        
-        if (getResponse.ok) {
-          const fileData = await getResponse.json();
-          currentContent = JSON.parse(atob(fileData.content));
-          sha = fileData.sha;
-        }
-        
-        // Добавляем новый кошелек
-        currentContent.push(walletInfo);
-        
-        // Обновляем файл
-        const updateUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${githubConfig.filename}`;
-        const updateResponse = await githubApiRequest(updateUrl, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `token ${githubConfig.token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            message: `Добавлен кошелек с балансом: ${walletInfo.balance} TON`,
-            content: btoa(JSON.stringify(currentContent, null, 2)),
-            sha: sha
-          })
-        });
-        
-        if (updateResponse.ok) {
-          console.log('Успешно сохранено в GitHub');
-          githubStatusEl.textContent = "Успешно сохранено в GitHub!";
-          githubStatusEl.style.color = "green";
-          githubErrorEl.textContent = "";
-        } else {
-          const errorText = await updateResponse.text();
-          console.error('Ошибка сохранения в GitHub:', errorText);
-          githubStatusEl.textContent = "Ошибка сохранения в GitHub!";
-          githubStatusEl.style.color = "red";
-          githubErrorEl.textContent = `Статус: ${updateResponse.status}. ${errorText}`;
-        }
-      } catch (error) {
-        console.error('Ошибка при работе с GitHub API:', error);
-        githubStatusEl.textContent = "Ошибка подключения к GitHub!";
-        githubStatusEl.style.color = "red";
-        githubErrorEl.textContent = error.message;
-      }
-      
-      setTimeout(() => {
-        githubStatusEl.textContent = "";
-        githubErrorEl.textContent = "";
-      }, 5000);
-    }
-
-    // Загрузка ранее найденных кошельков при запуске
-    async function loadSavedWallets() {
-      if (!githubConfig.token || !githubConfig.repo) return;
-      
-      try {
-        const url = `https://api.github.com/repos/${githubConfig.repo}/contents/${githubConfig.filename}`;
-        const response = await githubApiRequest(url, {
-          headers: {
-            'Authorization': `token ${githubConfig.token}`
-          }
-        });
-        
-        if (response.ok) {
-          const fileData = await response.json();
-          foundWallets = JSON.parse(atob(fileData.content));
-          foundCount = foundWallets.length;
-          foundCountEl.textContent = foundCount;
-          
-          // Обновляем счетчики
-          generatedCount = foundWallets.filter(w => w.source === 'auto').length;
-          manualCheckedCount = foundWallets.filter(w => w.source === 'manual').length;
-          generatedCountEl.textContent = generatedCount;
-          manualCheckedCountEl.textContent = manualCheckedCount;
-          
-          // Показываем найденные кошельки
-          if (foundWallets.length > 0) {
-            foundWalletsEl.style.display = "block";
-            foundWalletsEl.innerHTML = "<h3>Найденные кошельки с балансом:</h3>";
-            
-            foundWallets.forEach(walletInfo => {
-              const walletItem = document.createElement("div");
-              walletItem.className = "wallet-item";
-              walletItem.innerHTML = `
-                <p><strong>Мнемоника:</strong> ${walletInfo.mnemonic}</p>
-                <p><strong>Адрес:</strong> ${walletInfo.address}</p>
-                <p><strong>Баланс:</strong> ${walletInfo.balance} TON</p>
-                <p><strong>Найдено:</strong> ${new Date(walletInfo.timestamp).toLocaleString()}</p>
-                <p><strong>Источник:</strong> ${walletInfo.source === 'manual' ? 'Ручная проверка' : 'Автоматическая проверка'}</p>
-              `;
-              foundWalletsEl.appendChild(walletItem);
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Ошибка загрузки данных из GitHub:', error);
-      }
-    }
-
-    // Инициализация
-    loadConfig();
+    // Initialize
+    loadSavedData();
     updateLastUpdateTime();
-    
-    // Загружаем сохраненные кошельки при наличии конфигурации
-    if (githubConfig.token && githubConfig.repo) {
-      loadSavedWallets();
-    }
   </script>
 </body>
 </html>
