@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TON Wallet Scanner - by tk6vn</title>
+  <title>ton wallet scanner - by tk6vn</title>
   <style>
     * {
       box-sizing: border-box;
@@ -12,233 +12,234 @@
     }
     
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: 'Courier New', monospace;
+      background: #000;
+      color: #00ff00;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 20px;
-      color: #333;
+      overflow-x: hidden;
     }
     
     .container {
       width: 100%;
       max-width: 800px;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      overflow: hidden;
+      background: #000;
+      border: 1px solid #00ff00;
+      padding: 20px;
       margin: 20px 0;
     }
     
     .header {
-      background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-      color: white;
-      padding: 20px;
       text-align: center;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #00ff00;
     }
     
     .header h1 {
-      font-size: 28px;
+      font-size: 24px;
+      font-weight: normal;
+      text-transform: lowercase;
+      color: #00ff00;
       margin-bottom: 5px;
-      font-weight: 600;
     }
     
     .header p {
-      font-size: 14px;
-      opacity: 0.9;
+      font-size: 12px;
+      color: #00ff00;
+      opacity: 0.7;
     }
     
-    .content {
-      padding: 25px;
-    }
-    
-    .stats-panel {
+    .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(2, 1fr);
       gap: 15px;
       margin-bottom: 25px;
-    }
-    
-    .stat-card {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-      border-left: 4px solid #3498db;
-    }
-    
-    .stat-card h3 {
       font-size: 14px;
-      color: #6c757d;
-      margin-bottom: 8px;
     }
     
-    .stat-card .value {
-      font-size: 24px;
-      font-weight: bold;
-      color: #2c3e50;
+    .stat-item {
+      padding: 10px;
+      border: 1px solid #333;
+      background: #111;
+    }
+    
+    .stat-label {
+      color: #00ff00;
+      margin-bottom: 5px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+      color: #fff;
     }
     
     .current-data {
-      background: #e8f4fc;
-      padding: 20px;
-      border-radius: 10px;
       margin-bottom: 25px;
-      border: 1px solid #bee5eb;
-    }
-    
-    .current-data h3 {
-      color: #0c5460;
-      margin-bottom: 15px;
-      font-size: 18px;
+      padding: 15px;
+      border: 1px solid #333;
+      background: #111;
     }
     
     .data-item {
-      margin-bottom: 12px;
+      margin-bottom: 15px;
     }
     
-    .data-item label {
-      font-weight: 600;
-      color: #0c5460;
-      display: block;
+    .data-label {
+      color: #00ff00;
       margin-bottom: 5px;
+      font-size: 12px;
+      opacity: 0.8;
     }
     
-    .data-item .value {
-      background: white;
-      padding: 10px;
-      border-radius: 6px;
-      font-family: monospace;
+    .data-value {
+      font-family: 'Courier New', monospace;
       word-break: break-all;
-      border: 1px solid #bee5eb;
+      padding: 8px;
+      background: #000;
+      border: 1px solid #333;
+      min-height: 20px;
+    }
+    
+    .mnemonic-value {
+      color: #00ff00;
+      font-size: 13px;
+    }
+    
+    .address-value {
+      color: #00ffff;
+      font-size: 13px;
     }
     
     .balance-value {
-      color: #28a745;
+      font-size: 16px;
       font-weight: bold;
-      font-size: 18px;
+    }
+    
+    .balance-zero {
+      color: #ff0000;
+    }
+    
+    .balance-positive {
+      color: #00ff00;
     }
     
     .controls {
       display: flex;
       gap: 15px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       justify-content: center;
     }
     
     .btn {
-      padding: 12px 25px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
+      padding: 10px 20px;
+      border: 1px solid #00ff00;
+      background: #000;
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
       cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    
-    .btn-start {
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-      color: white;
-    }
-    
-    .btn-stop {
-      background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-      color: white;
-    }
-    
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+      text-transform: lowercase;
+      transition: all 0.2s ease;
     }
     
     .btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      background: #00ff00;
+      color: #000;
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: #333;
+      color: #333;
     }
     
     .status {
       text-align: center;
       margin-bottom: 20px;
       padding: 10px;
-      border-radius: 8px;
-      font-weight: 600;
-    }
-    
-    .status-running {
-      background: #d4edda;
-      color: #155724;
+      border: 1px solid #333;
+      background: #111;
+      font-size: 14px;
     }
     
     .status-stopped {
-      background: #f8d7da;
-      color: #721c24;
+      color: #ff0000;
+    }
+    
+    .status-running {
+      color: #00ff00;
+    }
+    
+    .last-update {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 12px;
+      color: #666;
     }
     
     .found-wallets {
-      margin-top: 25px;
+      border: 1px solid #333;
+      background: #111;
+      padding: 15px;
     }
     
     .found-wallets h3 {
-      color: #2c3e50;
+      color: #00ff00;
       margin-bottom: 15px;
-      font-size: 20px;
+      font-size: 16px;
       text-align: center;
+      text-transform: lowercase;
+      font-weight: normal;
     }
     
     .wallets-list {
       max-height: 300px;
       overflow-y: auto;
-      border: 1px solid #dee2e6;
-      border-radius: 8px;
-      padding: 15px;
     }
     
     .wallet-item {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      border-left: 4px solid #28a745;
+      background: #000;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid #333;
+      font-size: 12px;
     }
     
     .wallet-item p {
-      margin-bottom: 8px;
-      font-size: 14px;
+      margin-bottom: 6px;
     }
     
     .wallet-mnemonic {
-      color: #e74c3c;
-      font-family: monospace;
+      color: #00ff00;
       word-break: break-all;
     }
     
     .wallet-address {
-      color: #16a085;
-      font-family: monospace;
+      color: #00ffff;
     }
     
     .wallet-balance {
-      color: #8e44ad;
+      color: #00ff00;
       font-weight: bold;
-    }
-    
-    .last-update {
-      text-align: center;
-      margin-top: 15px;
-      font-size: 12px;
-      color: #6c757d;
     }
     
     .notification {
       position: fixed;
       top: 20px;
       right: 20px;
-      padding: 15px 20px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 600;
+      padding: 12px 18px;
+      border: 1px solid #00ff00;
+      background: #000;
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
       z-index: 1000;
       opacity: 0;
       transform: translateX(100%);
@@ -250,16 +251,8 @@
       transform: translateX(0);
     }
     
-    .notification-success {
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    }
-    
-    .notification-error {
-      background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-    }
-    
     @media (max-width: 600px) {
-      .stats-panel {
+      .stats {
         grid-template-columns: 1fr;
       }
       
@@ -270,66 +263,66 @@
       .btn {
         width: 100%;
       }
+      
+      .container {
+        padding: 15px;
+        margin: 10px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>TON Wallet Scanner</h1>
-      <p>by tk6vn • Automated wallet generator and balance checker</p>
+      <h1>ton wallet scanner</h1>
+      <p>by tk6vn</p>
     </div>
     
-    <div class="content">
-      <div class="stats-panel">
-        <div class="stat-card">
-          <h3>WALLETS GENERATED</h3>
-          <div class="value" id="generatedCount">0</div>
-        </div>
-        <div class="stat-card">
-          <h3>WALLETS WITH BALANCE</h3>
-          <div class="value" id="foundCount">0</div>
-        </div>
-        <div class="stat-card">
-          <h3>STATUS</h3>
-          <div class="value" id="statusText">STOPPED</div>
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-label">wallets generated</div>
+        <div class="stat-value" id="generatedCount">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">wallets with balance</div>
+        <div class="stat-value" id="foundCount">0</div>
+      </div>
+    </div>
+    
+    <div class="current-data">
+      <div class="data-item">
+        <div class="data-label">mnemonic phrase</div>
+        <div class="data-value mnemonic-value" id="currentPhrase">not active</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label">wallet address</div>
+        <div class="data-value address-value" id="walletAddress">-</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label">balance</div>
+        <div class="data-value">
+          <span id="walletBalance" class="balance-value balance-zero">-</span> ton
         </div>
       </div>
-      
-      <div class="current-data">
-        <h3>Current Wallet Information</h3>
-        <div class="data-item">
-          <label>MNEMONIC PHRASE</label>
-          <div class="value" id="currentPhrase">Not active</div>
-        </div>
-        <div class="data-item">
-          <label>WALLET ADDRESS</label>
-          <div class="value" id="walletAddress">-</div>
-        </div>
-        <div class="data-item">
-          <label>BALANCE</label>
-          <div class="value"><span id="walletBalance" class="balance-value">-</span> TON</div>
-        </div>
-      </div>
-      
-      <div class="controls">
-        <button class="btn btn-start" id="startBtn">START SCANNING</button>
-        <button class="btn btn-stop" id="stopBtn" disabled>STOP SCANNING</button>
-      </div>
-      
-      <div class="status status-stopped" id="statusMessage">
-        Scanner is stopped. Press START to begin.
-      </div>
-      
-      <div class="last-update">
-        Last update: <span id="lastUpdate">-</span>
-      </div>
-      
-      <div class="found-wallets">
-        <h3>FOUND WALLETS WITH BALANCE</h3>
-        <div class="wallets-list" id="walletsList">
-          <p style="text-align: center; color: #6c757d;">No wallets with balance found yet</p>
-        </div>
+    </div>
+    
+    <div class="controls">
+      <button class="btn" id="startBtn">start scanning</button>
+      <button class="btn" id="stopBtn" disabled>stop scanning</button>
+    </div>
+    
+    <div class="status status-stopped" id="statusMessage">
+      scanner status: stopped
+    </div>
+    
+    <div class="last-update">
+      last update: <span id="lastUpdate">-</span>
+    </div>
+    
+    <div class="found-wallets">
+      <h3>found wallets with balance</h3>
+      <div class="wallets-list" id="walletsList">
+        <p style="text-align: center; color: #666;">no wallets with balance found yet</p>
       </div>
     </div>
   </div>
@@ -345,7 +338,6 @@
     const stopBtn = document.getElementById('stopBtn');
     const generatedCountEl = document.getElementById('generatedCount');
     const foundCountEl = document.getElementById('foundCount');
-    const statusTextEl = document.getElementById('statusText');
     const statusMessageEl = document.getElementById('statusMessage');
     const currentPhraseEl = document.getElementById('currentPhrase');
     const walletAddressEl = document.getElementById('walletAddress');
@@ -389,9 +381,8 @@
     }
 
     // Show notification
-    function showNotification(message, isSuccess = true) {
+    function showNotification(message) {
       notificationEl.textContent = message;
-      notificationEl.className = `notification ${isSuccess ? 'notification-success' : 'notification-error'}`;
       notificationEl.classList.add('show');
       
       setTimeout(() => {
@@ -407,7 +398,7 @@
     // Update wallets list
     function updateWalletsList() {
       if (foundWallets.length === 0) {
-        walletsListEl.innerHTML = '<p style="text-align: center; color: #6c757d;">No wallets with balance found yet</p>';
+        walletsListEl.innerHTML = '<p style="text-align: center; color: #666;">no wallets with balance found yet</p>';
         return;
       }
       
@@ -416,13 +407,22 @@
         const walletItem = document.createElement('div');
         walletItem.className = 'wallet-item';
         walletItem.innerHTML = `
-          <p><strong>MNEMONIC:</strong> <span class="wallet-mnemonic">${wallet.mnemonic}</span></p>
-          <p><strong>ADDRESS:</strong> <span class="wallet-address">${wallet.address}</span></p>
-          <p><strong>BALANCE:</strong> <span class="wallet-balance">${wallet.balance} TON</span></p>
-          <p><strong>FOUND:</strong> ${new Date(wallet.timestamp).toLocaleString()}</p>
+          <p><strong>mnemonic:</strong> <span class="wallet-mnemonic">${wallet.mnemonic}</span></p>
+          <p><strong>address:</strong> <span class="wallet-address">${wallet.address}</span></p>
+          <p><strong>balance:</strong> <span class="wallet-balance">${wallet.balance} ton</span></p>
+          <p><strong>found:</strong> ${new Date(wallet.timestamp).toLocaleString()}</p>
         `;
         walletsListEl.appendChild(walletItem);
       });
+    }
+
+    // Update balance color
+    function updateBalanceColor(balance) {
+      if (balance === 0 || balance === '-') {
+        walletBalanceEl.className = 'balance-value balance-zero';
+      } else {
+        walletBalanceEl.className = 'balance-value balance-positive';
+      }
     }
 
     // Start scanning
@@ -430,11 +430,10 @@
       isScanning = true;
       startBtn.disabled = true;
       stopBtn.disabled = false;
-      statusTextEl.textContent = 'SCANNING';
-      statusMessageEl.textContent = 'Scanner is running...';
+      statusMessageEl.textContent = 'scanner status: running';
       statusMessageEl.className = 'status status-running';
       
-      showNotification('Scanner started successfully!');
+      showNotification('scanner started');
       runScanner();
     });
 
@@ -443,14 +442,14 @@
       isScanning = false;
       startBtn.disabled = false;
       stopBtn.disabled = true;
-      statusTextEl.textContent = 'STOPPED';
-      statusMessageEl.textContent = 'Scanner is stopped. Press START to begin.';
+      statusMessageEl.textContent = 'scanner status: stopped';
       statusMessageEl.className = 'status status-stopped';
-      currentPhraseEl.textContent = 'Not active';
+      currentPhraseEl.textContent = 'not active';
       walletAddressEl.textContent = '-';
       walletBalanceEl.textContent = '-';
+      updateBalanceColor(0);
       
-      showNotification('Scanner stopped.');
+      showNotification('scanner stopped');
     });
 
     // Scanner function
@@ -485,6 +484,7 @@
           if (data.ok) {
             balance = parseInt(data.result.balance, 10) / 1e9;
             walletBalanceEl.textContent = balance.toFixed(6);
+            updateBalanceColor(balance);
           }
           
           // Update counters
@@ -503,11 +503,11 @@
               timestamp: new Date().toISOString()
             };
             
-            foundWallets.unshift(walletInfo); // Add to beginning of array
+            foundWallets.unshift(walletInfo);
             updateWalletsList();
             saveData();
             
-            showNotification(`Found wallet with ${balance} TON!`, true);
+            showNotification(`found wallet with ${balance} ton`);
           }
           
           // Save data periodically
@@ -519,8 +519,9 @@
           await new Promise(resolve => setTimeout(resolve, 1000));
           
         } catch (error) {
-          console.error('Scanner error:', error);
-          walletBalanceEl.textContent = 'Error';
+          console.error('scanner error:', error);
+          walletBalanceEl.textContent = 'error';
+          updateBalanceColor(0);
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
@@ -529,6 +530,7 @@
     // Initialize
     loadSavedData();
     updateLastUpdateTime();
+    updateBalanceColor(0);
   </script>
 </body>
 </html>
