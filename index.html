@@ -131,6 +131,11 @@
       gap: 10px;
       margin-top: 10px;
     }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -159,6 +164,7 @@
         <button id="testGitHubBtn">Проверить подключение</button>
       </div>
       <div id="githubStatus" class="github-status"></div>
+      <div id="githubError" class="error"></div>
     </div>
 
     <div class="manual-section">
@@ -220,6 +226,7 @@
     const githubRepoEl = document.getElementById("githubRepo");
     const githubFilenameEl = document.getElementById("githubFilename");
     const githubStatusEl = document.getElementById("githubStatus");
+    const githubErrorEl = document.getElementById("githubError");
     const manualPhraseEl = document.getElementById("manualPhrase");
     const manualResultEl = document.getElementById("manualResult");
 
@@ -234,6 +241,12 @@
       repo: "",
       filename: "found_wallets.json"
     };
+
+    // Прокси для обхода CORS
+    const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
+    
+    // Альтернативный прокси
+    const CORS_PROXY_2 = "https://api.codetabs.com/v1/proxy?quest=";
 
     // Загрузка конфигурации при запуске
     function loadConfig() {
@@ -256,11 +269,44 @@
       localStorage.setItem('githubConfig', JSON.stringify(githubConfig));
       githubStatusEl.textContent = "Настройки сохранены!";
       githubStatusEl.style.color = "green";
+      githubErrorEl.textContent = "";
       
       setTimeout(() => {
         githubStatusEl.textContent = "";
       }, 3000);
     });
+
+    // Функция для работы с GitHub API через прокси
+    async function githubApiRequest(url, options = {}) {
+      try {
+        // Пробуем разные прокси
+        const proxies = [CORS_PROXY_2, CORS_PROXY];
+        
+        for (const proxy of proxies) {
+          try {
+            const proxyUrl = proxy + url;
+            const response = await fetch(proxyUrl, {
+              ...options,
+              headers: {
+                ...options.headers,
+                'Accept': 'application/vnd.github.v3+json'
+              }
+            });
+            
+            if (response.ok) {
+              return response;
+            }
+          } catch (e) {
+            console.log(`Прокси ${proxy} не сработал, пробуем следующую`);
+          }
+        }
+        
+        throw new Error('Все прокси не сработали');
+      } catch (error) {
+        console.error('Ошибка GitHub API:', error);
+        throw error;
+      }
+    }
 
     // Проверка подключения к GitHub
     testGitHubBtn.addEventListener("click", async () => {
@@ -271,11 +317,14 @@
       }
 
       try {
+        githubStatusEl.textContent = "Проверяем подключение...";
+        githubStatusEl.style.color = "blue";
+        githubErrorEl.textContent = "";
+
         const url = `https://api.github.com/repos/${githubConfig.repo}`;
-        const response = await fetch(url, {
+        const response = await githubApiRequest(url, {
           headers: {
-            'Authorization': `token ${githubConfig.token}`,
-            'Accept': 'application/vnd.github.v3+json'
+            'Authorization': `token ${githubConfig.token}`
           }
         });
 
@@ -283,17 +332,20 @@
           githubStatusEl.textContent = "Подключение к GitHub успешно!";
           githubStatusEl.style.color = "green";
         } else {
+          const errorData = await response.text();
           githubStatusEl.textContent = "Ошибка подключения к GitHub!";
           githubStatusEl.style.color = "red";
+          githubErrorEl.textContent = `Статус: ${response.status}. ${errorData}`;
         }
       } catch (error) {
         githubStatusEl.textContent = "Ошибка подключения к GitHub!";
         githubStatusEl.style.color = "red";
+        githubErrorEl.textContent = error.message;
       }
 
       setTimeout(() => {
         githubStatusEl.textContent = "";
-      }, 3000);
+      }, 5000);
     });
 
     // Проверка ручной фразы
@@ -519,10 +571,9 @@
       try {
         // Получаем текущее содержимое файла
         const getUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${githubConfig.filename}`;
-        const getResponse = await fetch(getUrl, {
+        const getResponse = await githubApiRequest(getUrl, {
           headers: {
-            'Authorization': `token ${githubConfig.token}`,
-            'Accept': 'application/vnd.github.v3+json'
+            'Authorization': `token ${githubConfig.token}`
           }
         });
         
@@ -540,11 +591,10 @@
         
         // Обновляем файл
         const updateUrl = `https://api.github.com/repos/${githubConfig.repo}/contents/${githubConfig.filename}`;
-        const updateResponse = await fetch(updateUrl, {
+        const updateResponse = await githubApiRequest(updateUrl, {
           method: 'PUT',
           headers: {
             'Authorization': `token ${githubConfig.token}`,
-            'Accept': 'application/vnd.github.v3+json',
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
@@ -558,20 +608,25 @@
           console.log('Успешно сохранено в GitHub');
           githubStatusEl.textContent = "Успешно сохранено в GitHub!";
           githubStatusEl.style.color = "green";
+          githubErrorEl.textContent = "";
         } else {
-          console.error('Ошибка сохранения в GitHub:', await updateResponse.text());
+          const errorText = await updateResponse.text();
+          console.error('Ошибка сохранения в GitHub:', errorText);
           githubStatusEl.textContent = "Ошибка сохранения в GitHub!";
           githubStatusEl.style.color = "red";
+          githubErrorEl.textContent = `Статус: ${updateResponse.status}. ${errorText}`;
         }
       } catch (error) {
         console.error('Ошибка при работе с GitHub API:', error);
         githubStatusEl.textContent = "Ошибка подключения к GitHub!";
         githubStatusEl.style.color = "red";
+        githubErrorEl.textContent = error.message;
       }
       
       setTimeout(() => {
         githubStatusEl.textContent = "";
-      }, 3000);
+        githubErrorEl.textContent = "";
+      }, 5000);
     }
 
     // Загрузка ранее найденных кошельков при запуске
@@ -580,10 +635,9 @@
       
       try {
         const url = `https://api.github.com/repos/${githubConfig.repo}/contents/${githubConfig.filename}`;
-        const response = await fetch(url, {
+        const response = await githubApiRequest(url, {
           headers: {
-            'Authorization': `token ${githubConfig.token}`,
-            'Accept': 'application/vnd.github.v3+json'
+            'Authorization': `token ${githubConfig.token}`
           }
         });
         
