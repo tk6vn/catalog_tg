@@ -14,7 +14,7 @@
     body {
       font-family: 'Courier New', monospace;
       background: #000;
-      color: #ffffff;
+      color: #00ff00;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -25,9 +25,9 @@
     
     .container {
       width: 100%;
-      max-width: 800px;
+      max-width: 1000px;
       background: #000;
-      border: 1px solid #ffffff;
+      border: 1px solid #00ff00;
       padding: 20px;
       margin: 20px 0;
     }
@@ -36,26 +36,54 @@
       text-align: center;
       margin-bottom: 30px;
       padding-bottom: 15px;
-      border-bottom: 1px solid #ffffff;
+      border-bottom: 1px solid #00ff00;
     }
     
     .header h1 {
       font-size: 24px;
       font-weight: normal;
       text-transform: lowercase;
-      color: #ffffff;
+      color: #00ff00;
       margin-bottom: 5px;
     }
     
     .header p {
       font-size: 12px;
-      color: #ffffff;
+      color: #00ff00;
       opacity: 0.7;
+    }
+    
+    .config {
+      margin-bottom: 25px;
+      padding: 15px;
+      border: 1px solid #333;
+      background: #111;
+    }
+    
+    .config-item {
+      margin-bottom: 15px;
+    }
+    
+    .config-label {
+      color: #00ff00;
+      margin-bottom: 5px;
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    
+    input {
+      width: 100%;
+      padding: 8px;
+      background: #000;
+      border: 1px solid #333;
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
     }
     
     .stats {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 15px;
       margin-bottom: 25px;
       font-size: 14px;
@@ -68,7 +96,7 @@
     }
     
     .stat-label {
-      color: #ffffff;
+      color: #00ff00;
       margin-bottom: 5px;
       font-size: 12px;
       opacity: 0.8;
@@ -79,45 +107,45 @@
       color: #fff;
     }
     
-    .current-data {
+    .workers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
       margin-bottom: 25px;
+    }
+    
+    .worker-item {
       padding: 15px;
       border: 1px solid #333;
       background: #111;
-    }
-    
-    .data-item {
-      margin-bottom: 15px;
-    }
-    
-    .data-label {
-      color: #ffffff;
-      margin-bottom: 5px;
       font-size: 12px;
-      opacity: 0.8;
     }
     
-    .data-value {
-      font-family: 'Courier New', monospace;
-      word-break: break-all;
-      padding: 8px;
-      background: #000;
-      border: 1px solid #333;
-      min-height: 20px;
+    .worker-header {
+      color: #00ff00;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .worker-data {
+      margin-bottom: 8px;
     }
     
     .mnemonic-value {
-      color: #ffffff;
-      font-size: 13px;
+      color: #00ff00;
+      word-break: break-all;
+      font-size: 11px;
+      line-height: 1.3;
     }
     
     .address-value {
-      color: #ff0000;
-      font-size: 13px;
+      color: #00ffff;
+      font-size: 11px;
+      word-break: break-all;
     }
     
     .balance-value {
-      font-size: 16px;
       font-weight: bold;
     }
     
@@ -134,13 +162,14 @@
       gap: 15px;
       margin-bottom: 20px;
       justify-content: center;
+      flex-wrap: wrap;
     }
     
     .btn {
       padding: 10px 20px;
-      border: 1px solid #ffffff;
+      border: 1px solid #00ff00;
       background: #000;
-      color: #ffffff;
+      color: #00ff00;
       font-family: 'Courier New', monospace;
       font-size: 14px;
       cursor: pointer;
@@ -149,7 +178,7 @@
     }
     
     .btn:hover:not(:disabled) {
-      background: #ffffff;
+      background: #00ff00;
       color: #000;
     }
     
@@ -219,10 +248,14 @@
     .wallet-mnemonic {
       color: #00ff00;
       word-break: break-all;
+      font-size: 11px;
+      line-height: 1.3;
     }
     
     .wallet-address {
       color: #00ffff;
+      font-size: 11px;
+      word-break: break-all;
     }
     
     .wallet-balance {
@@ -235,9 +268,9 @@
       top: 20px;
       right: 20px;
       padding: 12px 18px;
-      border: 1px solid #ffffff;
+      border: 1px solid #00ff00;
       background: #000;
-      color: #ffffff;
+      color: #00ff00;
       font-family: 'Courier New', monospace;
       font-size: 13px;
       z-index: 1000;
@@ -251,22 +284,13 @@
       transform: translateX(0);
     }
     
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
       .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .workers-grid {
         grid-template-columns: 1fr;
-      }
-      
-      .controls {
-        flex-direction: column;
-      }
-      
-      .btn {
-        width: 100%;
-      }
-      
-      .container {
-        padding: 15px;
-        margin: 10px;
       }
     }
   </style>
@@ -274,41 +298,49 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>ton wallet scanner</h1>
-      <p>by tk6vn</p>
+      <h1>multi-threaded ton scanner</h1>
+      <p>by tk6vn - parallel wallet checking</p>
+    </div>
+    
+    <div class="config">
+      <div class="config-item">
+        <div class="config-label">number of workers (threads)</div>
+        <input type="number" id="workersCount" value="3" min="1" max="10">
+      </div>
+      <div class="config-item">
+        <div class="config-label">requests per second limit</div>
+        <input type="number" id="rpsLimit" value="2" min="1" max="5">
+      </div>
     </div>
     
     <div class="stats">
       <div class="stat-item">
-        <div class="stat-label">wallets generated</div>
-        <div class="stat-value" id="generatedCount">0</div>
+        <div class="stat-label">total generated</div>
+        <div class="stat-value" id="totalGenerated">0</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">active workers</div>
+        <div class="stat-value" id="activeWorkers">0</div>
       </div>
       <div class="stat-item">
         <div class="stat-label">wallets with balance</div>
         <div class="stat-value" id="foundCount">0</div>
       </div>
+      <div class="stat-item">
+        <div class="stat-label">requests rate</div>
+        <div class="stat-value" id="requestRate">0/s</div>
+      </div>
     </div>
     
-    <div class="current-data">
-      <div class="data-item">
-        <div class="data-label">mnemonic phrase</div>
-        <div class="data-value mnemonic-value" id="currentPhrase">not active</div>
-      </div>
-      <div class="data-item">
-        <div class="data-label">wallet address</div>
-        <div class="data-value address-value" id="walletAddress">-</div>
-      </div>
-      <div class="data-item">
-        <div class="data-label">balance</div>
-        <div class="data-value">
-          <span id="walletBalance" class="balance-value balance-zero">-</span> ton
-        </div>
-      </div>
+    <div class="workers-grid" id="workersGrid">
+      <!-- Workers will be dynamically added here -->
     </div>
     
     <div class="controls">
       <button class="btn" id="startBtn">start scanning</button>
       <button class="btn" id="stopBtn" disabled>stop scanning</button>
+      <button class="btn" id="addWorkerBtn">+ add worker</button>
+      <button class="btn" id="removeWorkerBtn">- remove worker</button>
     </div>
     
     <div class="status status-stopped" id="statusMessage">
@@ -330,64 +362,112 @@
   <div class="notification" id="notification"></div>
 
   <script type="module">
+    // Import TON libraries
     import { mnemonicToWalletKey, mnemonicNew } from "https://esm.sh/@ton/crypto";
     import { WalletContractV4 } from "https://esm.sh/@ton/ton";
+
+    // Main application state
+    const state = {
+      isScanning: false,
+      totalGenerated: 0,
+      foundCount: 0,
+      activeWorkers: 0,
+      workers: [],
+      requestRate: 0,
+      foundWallets: [],
+      lastRequestTime: 0,
+      requestQueue: []
+    };
 
     // Elements
     const startBtn = document.getElementById('startBtn');
     const stopBtn = document.getElementById('stopBtn');
-    const generatedCountEl = document.getElementById('generatedCount');
+    const addWorkerBtn = document.getElementById('addWorkerBtn');
+    const removeWorkerBtn = document.getElementById('removeWorkerBtn');
+    const workersCountInput = document.getElementById('workersCount');
+    const rpsLimitInput = document.getElementById('rpsLimit');
+    const totalGeneratedEl = document.getElementById('totalGenerated');
+    const activeWorkersEl = document.getElementById('activeWorkers');
     const foundCountEl = document.getElementById('foundCount');
+    const requestRateEl = document.getElementById('requestRate');
     const statusMessageEl = document.getElementById('statusMessage');
-    const currentPhraseEl = document.getElementById('currentPhrase');
-    const walletAddressEl = document.getElementById('walletAddress');
-    const walletBalanceEl = document.getElementById('walletBalance');
     const lastUpdateEl = document.getElementById('lastUpdate');
     const walletsListEl = document.getElementById('walletsList');
+    const workersGridEl = document.getElementById('workersGrid');
     const notificationEl = document.getElementById('notification');
 
-    // State
-    let isScanning = false;
-    let generatedCount = 0;
-    let foundCount = 0;
-    let foundWallets = [];
+    // Initialize workers
+    function initializeWorkers() {
+      const workersCount = parseInt(workersCountInput.value) || 3;
+      state.workers = Array(workersCount).fill().map((_, index) => ({
+        id: index + 1,
+        status: 'idle',
+        generated: 0,
+        found: 0,
+        currentPhrase: '',
+        currentAddress: '',
+        currentBalance: 0
+      }));
+      renderWorkers();
+    }
 
-    // Load saved data
-    function loadSavedData() {
-      const savedData = localStorage.getItem('tonScannerData');
-      if (savedData) {
-        const data = JSON.parse(savedData);
-        generatedCount = data.generatedCount || 0;
-        foundCount = data.foundCount || 0;
-        foundWallets = data.foundWallets || [];
-        
-        generatedCountEl.textContent = generatedCount.toLocaleString();
-        foundCountEl.textContent = foundCount.toLocaleString();
-        
-        updateWalletsList();
+    // Render workers grid
+    function renderWorkers() {
+      workersGridEl.innerHTML = '';
+      state.workers.forEach(worker => {
+        const workerEl = document.createElement('div');
+        workerEl.className = 'worker-item';
+        workerEl.innerHTML = `
+          <div class="worker-header">worker #${worker.id} - ${worker.status}</div>
+          <div class="worker-data">
+            <div>generated: ${worker.generated}</div>
+            <div>found: ${worker.found}</div>
+          </div>
+          <div class="worker-data">
+            <div>phrase: <span class="mnemonic-value">${worker.currentPhrase || 'waiting...'}</span></div>
+            <div>address: <span class="address-value">${worker.currentAddress || '-'}</span></div>
+            <div>balance: <span class="balance-value ${worker.currentBalance > 0 ? 'balance-positive' : 'balance-zero'}">${worker.currentBalance > 0 ? worker.currentBalance.toFixed(6) : '0'} TON</span></div>
+          </div>
+        `;
+        workersGridEl.appendChild(workerEl);
+      });
+      activeWorkersEl.textContent = state.workers.length;
+    }
+
+    // Update worker status
+    function updateWorkerStatus(workerId, updates) {
+      const worker = state.workers.find(w => w.id === workerId);
+      if (worker) {
+        Object.assign(worker, updates);
+        renderWorkers();
       }
     }
 
-    // Save data
-    function saveData() {
-      const data = {
-        generatedCount,
-        foundCount,
-        foundWallets,
-        lastUpdate: new Date().toISOString()
-      };
-      localStorage.setItem('tonScannerData', JSON.stringify(data));
-      updateLastUpdateTime();
+    // Rate limiter for API requests
+    async function rateLimitedFetch(url) {
+      const now = Date.now();
+      const rpsLimit = parseInt(rpsLimitInput.value) || 2;
+      const minDelay = 1000 / rpsLimit;
+      
+      if (state.lastRequestTime > 0) {
+        const timeSinceLastRequest = now - state.lastRequestTime;
+        if (timeSinceLastRequest < minDelay) {
+          await new Promise(resolve => setTimeout(resolve, minDelay - timeSinceLastRequest));
+        }
+      }
+      
+      state.lastRequestTime = Date.now();
+      state.requestRate = rpsLimit;
+      requestRateEl.textContent = `${rpsLimit}/s`;
+      
+      return fetch(url);
     }
 
     // Show notification
     function showNotification(message) {
       notificationEl.textContent = message;
       notificationEl.classList.add('show');
-      
-      setTimeout(() => {
-        notificationEl.classList.remove('show');
-      }, 3000);
+      setTimeout(() => notificationEl.classList.remove('show'), 3000);
     }
 
     // Update last update time
@@ -397,140 +477,198 @@
 
     // Update wallets list
     function updateWalletsList() {
-      if (foundWallets.length === 0) {
+      if (state.foundWallets.length === 0) {
         walletsListEl.innerHTML = '<p style="text-align: center; color: #666;">no wallets with balance found yet</p>';
         return;
       }
       
       walletsListEl.innerHTML = '';
-      foundWallets.forEach(wallet => {
+      state.foundWallets.forEach(wallet => {
         const walletItem = document.createElement('div');
         walletItem.className = 'wallet-item';
         walletItem.innerHTML = `
+          <p><strong>worker:</strong> ${wallet.workerId}</p>
           <p><strong>mnemonic:</strong> <span class="wallet-mnemonic">${wallet.mnemonic}</span></p>
           <p><strong>address:</strong> <span class="wallet-address">${wallet.address}</span></p>
-          <p><strong>balance:</strong> <span class="wallet-balance">${wallet.balance} ton</span></p>
+          <p><strong>balance:</strong> <span class="wallet-balance">${wallet.balance.toFixed(6)} TON</span></p>
           <p><strong>found:</strong> ${new Date(wallet.timestamp).toLocaleString()}</p>
         `;
         walletsListEl.appendChild(walletItem);
       });
     }
 
-    // Update balance color
-    function updateBalanceColor(balance) {
-      if (balance === 0 || balance === '-') {
-        walletBalanceEl.className = 'balance-value balance-zero';
-      } else {
-        walletBalanceEl.className = 'balance-value balance-positive';
+    // Save data to localStorage
+    function saveData() {
+      const data = {
+        totalGenerated: state.totalGenerated,
+        foundCount: state.foundCount,
+        foundWallets: state.foundWallets,
+        lastUpdate: new Date().toISOString()
+      };
+      localStorage.setItem('tonMultiScannerData', JSON.stringify(data));
+      updateLastUpdateTime();
+    }
+
+    // Load saved data
+    function loadSavedData() {
+      const savedData = localStorage.getItem('tonMultiScannerData');
+      if (savedData) {
+        const data = JSON.parse(savedData);
+        state.totalGenerated = data.totalGenerated || 0;
+        state.foundCount = data.foundCount || 0;
+        state.foundWallets = data.foundWallets || [];
+        
+        totalGeneratedEl.textContent = state.totalGenerated.toLocaleString();
+        foundCountEl.textContent = state.foundCount.toLocaleString();
+        updateWalletsList();
       }
     }
 
-    // Start scanning
-    startBtn.addEventListener('click', () => {
-      isScanning = true;
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-      statusMessageEl.textContent = 'scanner status: running';
-      statusMessageEl.className = 'status status-running';
-      
-      showNotification('scanner started');
-      runScanner();
-    });
-
-    // Stop scanning
-    stopBtn.addEventListener('click', () => {
-      isScanning = false;
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      statusMessageEl.textContent = 'scanner status: stopped';
-      statusMessageEl.className = 'status status-stopped';
-      currentPhraseEl.textContent = 'not active';
-      walletAddressEl.textContent = '-';
-      walletBalanceEl.textContent = '-';
-      updateBalanceColor(0);
-      
-      showNotification('scanner stopped');
-    });
-
-    // Scanner function
-    async function runScanner() {
-      while (isScanning) {
+    // Worker function - UPDATED to use proper TON generation like in gen3
+    async function runWorker(workerId) {
+      while (state.isScanning) {
         try {
-          // Generate new mnemonic
+          updateWorkerStatus(workerId, { status: 'generating' });
+          
+          // Generate proper mnemonic using TON library - like in gen3
           const mnemonic = await mnemonicNew(24);
           const mnemonicPhrase = mnemonic.join(' ');
           
-          // Display current phrase
-          currentPhraseEl.textContent = mnemonicPhrase;
+          updateWorkerStatus(workerId, {
+            status: 'checking',
+            currentPhrase: mnemonicPhrase // Show full phrase instead of truncated
+          });
           
-          // Get keys from mnemonic
+          // Get keys from mnemonic - like in gen3
           const keyPair = await mnemonicToWalletKey(mnemonic);
           
-          // Create wallet
+          // Create wallet V4 - like in gen3
           const wallet = WalletContractV4.create({
             workchain: 0,
             publicKey: keyPair.publicKey,
           });
           
           const address = wallet.address.toString();
-          walletAddressEl.textContent = address;
+          updateWorkerStatus(workerId, { currentAddress: address });
           
-          // Get balance
+          // Check balance with rate limiting
           const balanceUrl = `https://toncenter.com/api/v2/getAddressInformation?address=${address}`;
-          const response = await fetch(balanceUrl);
+          const response = await rateLimitedFetch(balanceUrl);
           const data = await response.json();
           
           let balance = 0;
           if (data.ok) {
             balance = parseInt(data.result.balance, 10) / 1e9;
-            walletBalanceEl.textContent = balance.toFixed(6);
-            updateBalanceColor(balance);
           }
           
           // Update counters
-          generatedCount++;
-          generatedCountEl.textContent = generatedCount.toLocaleString();
+          state.totalGenerated++;
+          totalGeneratedEl.textContent = state.totalGenerated.toLocaleString();
+          
+          updateWorkerStatus(workerId, {
+            generated: state.workers[workerId - 1].generated + 1,
+            currentBalance: balance
+          });
           
           // Check if wallet has balance
           if (balance > 0) {
-            foundCount++;
-            foundCountEl.textContent = foundCount.toLocaleString();
+            state.foundCount++;
+            foundCountEl.textContent = state.foundCount.toLocaleString();
             
             const walletInfo = {
+              workerId,
               mnemonic: mnemonicPhrase,
               address: address,
               balance: balance,
               timestamp: new Date().toISOString()
             };
             
-            foundWallets.unshift(walletInfo);
+            state.foundWallets.unshift(walletInfo);
             updateWalletsList();
             saveData();
             
-            showNotification(`found wallet with ${balance} ton`);
+            updateWorkerStatus(workerId, {
+              found: state.workers[workerId - 1].found + 1
+            });
+            
+            showNotification(`worker #${workerId} found wallet with ${balance.toFixed(6)} TON`);
           }
           
-          // Save data periodically
-          if (generatedCount % 10 === 0) {
-            saveData();
-          }
-          
-          // Delay between requests
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Small delay between iterations
+          await new Promise(resolve => setTimeout(resolve, 100));
           
         } catch (error) {
-          console.error('scanner error:', error);
-          walletBalanceEl.textContent = 'error';
-          updateBalanceColor(0);
+          console.error(`Worker ${workerId} error:`, error);
+          updateWorkerStatus(workerId, { status: 'error', currentBalance: -1 });
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
       }
+      
+      updateWorkerStatus(workerId, { status: 'idle' });
     }
+
+    // Start scanning
+    startBtn.addEventListener('click', async () => {
+      state.isScanning = true;
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+      statusMessageEl.textContent = 'scanner status: running';
+      statusMessageEl.className = 'status status-running';
+      
+      initializeWorkers();
+      
+      // Start all workers
+      state.workers.forEach(worker => {
+        runWorker(worker.id);
+      });
+      
+      showNotification('multi-threaded scanner started');
+    });
+
+    // Stop scanning
+    stopBtn.addEventListener('click', () => {
+      state.isScanning = false;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+      statusMessageEl.textContent = 'scanner status: stopped';
+      statusMessageEl.className = 'status status-stopped';
+      
+      showNotification('scanner stopped');
+    });
+
+    // Add worker
+    addWorkerBtn.addEventListener('click', () => {
+      const newWorkerId = state.workers.length + 1;
+      state.workers.push({
+        id: newWorkerId,
+        status: 'idle',
+        generated: 0,
+        found: 0,
+        currentPhrase: '',
+        currentAddress: '',
+        currentBalance: 0
+      });
+      workersCountInput.value = state.workers.length;
+      renderWorkers();
+      
+      if (state.isScanning) {
+        runWorker(newWorkerId);
+      }
+    });
+
+    // Remove worker
+    removeWorkerBtn.addEventListener('click', () => {
+      if (state.workers.length > 1) {
+        state.workers.pop();
+        workersCountInput.value = state.workers.length;
+        renderWorkers();
+      }
+    });
 
     // Initialize
     loadSavedData();
     updateLastUpdateTime();
-    updateBalanceColor(0);
+    initializeWorkers();
   </script>
 </body>
 </html>
