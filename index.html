@@ -25,7 +25,7 @@
     
     .container {
       width: 100%;
-      max-width: 1000px;
+      max-width: 1200px;
       background: #000;
       border: 1px solid #00ff00;
       padding: 20px;
@@ -71,7 +71,7 @@
       opacity: 0.8;
     }
     
-    input {
+    input, select {
       width: 100%;
       padding: 8px;
       background: #000;
@@ -364,7 +364,7 @@
   <script type="module">
     // Import TON libraries
     import { mnemonicToWalletKey, mnemonicNew } from "https://esm.sh/@ton/crypto";
-    import { WalletContractV4 } from "https://esm.sh/@ton/ton";
+    import { WalletContractV3R1, WalletContractV3R2, WalletContractV4, WalletContractV5R1 } from "https://esm.sh/@ton/ton";
 
     // Main application state
     const state = {
@@ -405,7 +405,10 @@
         generated: 0,
         found: 0,
         currentPhrase: '',
-        currentAddress: '',
+        currentAddressV3R1: '',
+        currentAddressV3R2: '',
+        currentAddressV4: '',
+        currentAddressV5R1: '',
         currentBalance: 0
       }));
       renderWorkers();
@@ -425,7 +428,10 @@
           </div>
           <div class="worker-data">
             <div>phrase: <span class="mnemonic-value">${worker.currentPhrase || 'waiting...'}</span></div>
-            <div>address: <span class="address-value">${worker.currentAddress || '-'}</span></div>
+            <div>v3R1: <span class="address-value">${worker.currentAddressV3R1 || '-'}</span></div>
+            <div>v3R2: <span class="address-value">${worker.currentAddressV3R2 || '-'}</span></div>
+            <div>v4: <span class="address-value">${worker.currentAddressV4 || '-'}</span></div>
+            <div>v5R1: <span class="address-value">${worker.currentAddressV5R1 || '-'}</span></div>
             <div>balance: <span class="balance-value ${worker.currentBalance > 0 ? 'balance-positive' : 'balance-zero'}">${worker.currentBalance > 0 ? worker.currentBalance.toFixed(6) : '0'} TON</span></div>
           </div>
         `;
@@ -441,6 +447,18 @@
         Object.assign(worker, updates);
         renderWorkers();
       }
+    }
+
+    // Get balance function
+    async function getBalance(address) {
+      const balanceUrl = `https://toncenter.com/api/v2/getAddressInformation?address=${address}`;
+      const response = await rateLimitedFetch(balanceUrl);
+      const data = await response.json();
+      
+      if (data.ok) {
+        return parseInt(data.result.balance, 10) / 1e9;
+      }
+      return 0;
     }
 
     // Rate limiter for API requests
@@ -488,6 +506,7 @@
         walletItem.className = 'wallet-item';
         walletItem.innerHTML = `
           <p><strong>worker:</strong> ${wallet.workerId}</p>
+          <p><strong>version:</strong> ${wallet.version}</p>
           <p><strong>mnemonic:</strong> <span class="wallet-mnemonic">${wallet.mnemonic}</span></p>
           <p><strong>address:</strong> <span class="wallet-address">${wallet.address}</span></p>
           <p><strong>balance:</strong> <span class="wallet-balance">${wallet.balance.toFixed(6)} TON</span></p>
@@ -524,41 +543,62 @@
       }
     }
 
-    // Worker function - UPDATED to use proper TON generation like in gen3
+    // Worker function - проверяет все версии кошельков
     async function runWorker(workerId) {
       while (state.isScanning) {
         try {
           updateWorkerStatus(workerId, { status: 'generating' });
           
-          // Generate proper mnemonic using TON library - like in gen3
+          // Generate proper mnemonic using TON library
           const mnemonic = await mnemonicNew(24);
           const mnemonicPhrase = mnemonic.join(' ');
           
           updateWorkerStatus(workerId, {
             status: 'checking',
-            currentPhrase: mnemonicPhrase // Show full phrase instead of truncated
+            currentPhrase: mnemonicPhrase
           });
           
-          // Get keys from mnemonic - like in gen3
+          // Get keys from mnemonic
           const keyPair = await mnemonicToWalletKey(mnemonic);
           
-          // Create wallet V4 - like in gen3
-          const wallet = WalletContractV4.create({
-            workchain: 0,
-            publicKey: keyPair.publicKey,
+          // Create all wallet versions
+          const wallets = {
+            v3R1: WalletContractV3R1.create({ workchain: 0, publicKey: keyPair.publicKey }),
+            v3R2: WalletContractV3R2.create({ workchain: 0, publicKey: keyPair.publicKey }),
+            v4: WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey }),
+            v5R1: WalletContractV5R1.create({ workchain: 0, publicKey: keyPair.publicKey })
+          };
+          
+          // Update addresses in UI
+          updateWorkerStatus(workerId, {
+            currentAddressV3R1: wallets.v3R1.address.toString(),
+            currentAddressV3R2: wallets.v3R2.address.toString(),
+            currentAddressV4: wallets.v4.address.toString(),
+            currentAddressV5R1: wallets.v5R1.address.toString()
           });
           
-          const address = wallet.address.toString();
-          updateWorkerStatus(workerId, { currentAddress: address });
+          let foundWallet = null;
           
-          // Check balance with rate limiting
-          const balanceUrl = `https://toncenter.com/api/v2/getAddressInformation?address=${address}`;
-          const response = await rateLimitedFetch(balanceUrl);
-          const data = await response.json();
-          
-          let balance = 0;
-          if (data.ok) {
-            balance = parseInt(data.result.balance, 10) / 1e9;
+          // Check balance for all wallet versions
+          for (const [version, wallet] of Object.entries(wallets)) {
+            try {
+              const address = wallet.address.toString();
+              const balance = await getBalance(address);
+              
+              if (balance > 0) {
+                foundWallet = {
+                  workerId,
+                  version,
+                  mnemonic: mnemonicPhrase,
+                  address: address,
+                  balance: balance,
+                  timestamp: new Date().toISOString()
+                };
+                break; // Stop checking if found balance
+              }
+            } catch (error) {
+              console.error(`Error checking ${version} wallet:`, error);
+            }
           }
           
           // Update counters
@@ -567,23 +607,15 @@
           
           updateWorkerStatus(workerId, {
             generated: state.workers[workerId - 1].generated + 1,
-            currentBalance: balance
+            currentBalance: foundWallet ? foundWallet.balance : 0
           });
           
           // Check if wallet has balance
-          if (balance > 0) {
+          if (foundWallet) {
             state.foundCount++;
             foundCountEl.textContent = state.foundCount.toLocaleString();
             
-            const walletInfo = {
-              workerId,
-              mnemonic: mnemonicPhrase,
-              address: address,
-              balance: balance,
-              timestamp: new Date().toISOString()
-            };
-            
-            state.foundWallets.unshift(walletInfo);
+            state.foundWallets.unshift(foundWallet);
             updateWalletsList();
             saveData();
             
@@ -591,7 +623,7 @@
               found: state.workers[workerId - 1].found + 1
             });
             
-            showNotification(`worker #${workerId} found wallet with ${balance.toFixed(6)} TON`);
+            showNotification(`worker #${workerId} found ${foundWallet.version} wallet with ${foundWallet.balance.toFixed(6)} TON`);
           }
           
           // Small delay between iterations
@@ -645,7 +677,10 @@
         generated: 0,
         found: 0,
         currentPhrase: '',
-        currentAddress: '',
+        currentAddressV3R1: '',
+        currentAddressV3R2: '',
+        currentAddressV4: '',
+        currentAddressV5R1: '',
         currentBalance: 0
       });
       workersCountInput.value = state.workers.length;
