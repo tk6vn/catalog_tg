@@ -1,8 +1,6 @@
 // Конфигурация
 const HDREZKA_DOMAINS = [
-    'https://hdrezka.sh',
-    'https://hdrezka.ag',
-    'https://rezka.ag'
+    'https://hdrezka2vbppy.org',
 ];
 
 let currentDomain = HDREZKA_DOMAINS[0];
