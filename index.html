@@ -19,6 +19,16 @@
             <h2>Результаты поиска</h2>
             <div id="filmList" class="film-list"></div>
         </div>
+        <!-- Добавьте этот раздел после search-section -->
+        <div id="authSection" class="auth-section">
+            <h3>Авторизация HDRezka</h3>
+            <div class="auth-form">
+                <input type="text" id="loginInput" placeholder="Email или логин">
+                <input type="password" id="passwordInput" placeholder="Пароль">
+                <button onclick="loginToHdrezka()">Войти</button>
+            </div>
+            <div id="authStatus"></div>
+        </div>
 
         <div id="playerSection" class="player-section" style="display: none;">
             <h2>Выбор озвучки и качества</h2>
