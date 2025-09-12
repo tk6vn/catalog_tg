@@ -1,0 +1,280 @@
+const { mnemonicToWalletKey, mnemonicNew } = require("@ton/crypto");
+const { WalletContractV3R1, WalletContractV3R2, WalletContractV4, WalletContractV5R1 } = require("@ton/ton");
+const axios = require("axios");
+const fs = require("fs");
+
+// Конфигурация
+const CONFIG = {
+  workers: 4,
+  delays: [1200, 1500, 1300, 1400], // Разные задержки для каждого воркера
+  saveFile: "found_wallets.txt",
+  retryDelay: 4000
+};
+
+// ПРОВЕРЕННЫЕ РАБОЧИЕ API endpoints
+const WORKER_APIS = [
+  {
+    name: 'toncenter',
+    url: (address) => `https://toncenter.com/api/v2/getAddressInformation?address=${address}`,
+    parser: (data) => data.ok ? parseInt(data.result.balance, 10) / 1e9 : 0
+  },
+  {
+    name: 'tonapi', 
+    url: (address) => `https://tonapi.io/v2/accounts/${address}`,
+    parser: (data) => data.balance ? parseInt(data.balance, 10) / 1e9 : 0
+  },
+  {
+    name: 'tonviewer',
+    url: (address) => `https://tonviewer.com/api/v2/accounts/${address}`,
+    parser: (data) => data.balance ? parseInt(data.balance, 10) / 1e9 : 0
+  },
+  {
+    name: 'ton.sh',
+    url: (address) => `https://ton.sh/wallet/${address}/balance`,
+    parser: (data) => data.balance ? parseInt(data.balance, 10) / 1e9 : 0
+  }
+];
+
+// Альтернативные API (бэкапы)
+const ALTERNATIVE_APIS = [
+  {
+    name: 'toncenter-backup',
+    url: (address) => `https://toncenter.com/api/v3/address/${address}/balance`,
+    parser: (data) => data.balance ? parseInt(data.balance, 10) / 1e9 : 0
+  },
+  {
+    name: 'tonapi-backup', 
+    url: (address) => `https://tonapi.io/v1/account/getInfo?account=${address}`,
+    parser: (data) => data.balance ? parseInt(data.balance, 10) / 1e9 : 0
+  },
+  {
+    name: 'dton.io',
+    url: (address) => `https://api.dton.io/account/${address}`,
+    parser: (data) => data.balance ? parseInt(data.balance, 10) / 1e9 : 0
+  },
+  {
+    name: 'tontech',
+    url: (address) => `https://api.tontech.io/account/${address}`,
+    parser: (data) => data.balance ? parseInt(data.balance, 10) / 1e9 : 0
+  }
+];
+
+// Статистика
+let stats = {
+  totalChecks: 0,
+  foundWallets: 0,
+  startTime: Date.now(),
+};
+
+// Таймеры для каждого воркера
+const workerTimers = Array(CONFIG.workers).fill().map(() => ({ lastRequest: 0 }));
+
+// Функция для записи найденного кошелька
+async function saveFoundWallet(walletData) {
+  const logEntry = `
+[${new Date().toLocaleString()}] Проверка #${walletData.checkNumber}
+Воркер: ${walletData.workerId} (${walletData.api})
+Мнемоника: ${walletData.mnemonic}
+Адрес: ${walletData.address}
+Версия: ${walletData.version}
+Баланс: ${walletData.balance.toFixed(6)} TON
+----------------------------------------
+`;
+
+  fs.appendFileSync(CONFIG.saveFile, logEntry, 'utf8');
+  
+  console.log('\n' + '='.repeat(60));
+  console.log('\x1b[42m\x1b[30m💰 НАЙДЕН КОШЕЛЕК С БАЛАНСОМ!\x1b[0m');
+  console.log(`\x1b[32mПроверка: #${walletData.checkNumber}\x1b[0m`);
+  console.log(`\x1b[32mВоркер: ${walletData.workerId} (${walletData.api})\x1b[0m`);
+  console.log(`\x1b[32mАдрес: ${walletData.address}\x1b[0m`);
+  console.log(`\x1b[32mВерсия: ${walletData.version}\x1b[0m`);
+  console.log(`\x1b[32mБаланс: ${walletData.balance.toFixed(6)} TON\x1b[0m`);
+  console.log('\x1b[32m' + '='.repeat(60) + '\x1b[0m');
+}
+
+// Универсальный парсер баланса
+function parseBalanceResponse(data, apiName) {
+  try {
+    switch(apiName) {
+      case 'toncenter':
+        return data.ok ? parseInt(data.result.balance, 10) / 1e9 : 0;
+      
+      case 'tonapi':
+      case 'tonapi-backup':
+        return data.balance ? parseInt(data.balance, 10) / 1e9 : 0;
+      
+      case 'tonviewer':
+        return data.balance ? parseInt(data.balance, 10) / 1e9 : 0;
+      
+      case 'ton.sh':
+        return data.balance ? parseInt(data.balance, 10) / 1e9 : 0;
+      
+      case 'dton.io':
+        return data.balance ? parseInt(data.balance, 10) / 1e9 : 0;
+      
+      case 'tontech':
+        return data.balance ? parseInt(data.balance, 10) / 1e9 : 0;
+      
+      default:
+        return 0;
+    }
+  } catch (error) {
+    return 0;
+  }
+}
+
+// Функция проверки баланса
+async function checkBalanceWithApi(address, apiConfig, workerId, alternativeApi = null) {
+  const now = Date.now();
+  const workerTimer = workerTimers[workerId - 1];
+  const delay = CONFIG.delays[workerId - 1];
+  
+  // Индивидуальная задержка для каждого воркера
+  if (workerTimer.lastRequest > 0) {
+    const timeSinceLastRequest = now - workerTimer.lastRequest;
+    if (timeSinceLastRequest < delay) {
+      await new Promise(resolve => setTimeout(resolve, delay - timeSinceLastRequest));
+    }
+  }
+  
+  workerTimer.lastRequest = Date.now();
+
+  const currentApi = alternativeApi || apiConfig;
+  
+  try {
+    const apiUrl = currentApi.url(address);
+    const response = await axios.get(apiUrl, {
+      timeout: 10000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json',
+        'Referer': 'https://ton.org/'
+      }
+    });
+
+    const balance = parseBalanceResponse(response.data, currentApi.name);
+    
+    return { 
+      balance: balance, 
+      api: currentApi.name,
+      success: true 
+    };
+    
+  } catch (error) {
+    // Если ошибка 429, 418, 404 или сетевые проблемы - пробуем альтернативный API
+    if (error.response?.status === 429 || error.response?.status === 418 || 
+        error.response?.status === 404 || error.code === 'ENOTFOUND') {
+      
+      console.log(`\x1b[33m⚠️  Воркер ${workerId}: ${currentApi.name} недоступен, пробуем альтернативный API\x1b[0m`);
+      
+      // Пробуем альтернативный API
+      const altApi = ALTERNATIVE_APIS[workerId - 1];
+      if (altApi) {
+        return await checkBalanceWithApi(address, apiConfig, workerId, altApi);
+      }
+    }
+    
+    return { 
+      balance: 0, 
+      api: currentApi.name,
+      success: false,
+      error: error.message 
+    };
+  }
+}
+
+// Функция воркера
+async function workerProcess(workerId) {
+  const apiConfig = WORKER_APIS[workerId - 1];
+  console.log(`▶️  Воркер ${workerId} запущен с API: ${apiConfig.name}`);
+
+  while (true) {
+    try {
+      const mnemonic = await mnemonicNew(24);
+      const mnemonicPhrase = mnemonic.join(' ');
+      
+      const keyPair = await mnemonicToWalletKey(mnemonic);
+
+      const walletVersions = [
+        { version: 'v3R1', wallet: WalletContractV3R1.create({ workchain: 0, publicKey: keyPair.publicKey }) },
+        { version: 'v3R2', wallet: WalletContractV3R2.create({ workchain: 0, publicKey: keyPair.publicKey }) },
+        { version: 'v4', wallet: WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey }) },
+        { version: 'v5R1', wallet: WalletContractV5R1.create({ workchain: 0, publicKey: keyPair.publicKey }) }
+      ];
+
+      let foundWallet = null;
+
+      // Проверяем все версии кошелька
+      for (const { version, wallet } of walletVersions) {
+        const address = wallet.address.toString();
+        const checkNumber = ++stats.totalChecks;
+        
+        // Вывод в нужном формате: номер | воркер | версия | адрес
+        console.log(`${checkNumber} | ${workerId} | ${version} | ${address}`);
+        
+        const result = await checkBalanceWithApi(address, apiConfig, workerId);
+        
+        if (result.balance > 0) {
+          foundWallet = {
+            workerId,
+            checkNumber,
+            mnemonic: mnemonicPhrase,
+            address: address,
+            version: version,
+            balance: result.balance,
+            api: result.api
+          };
+          break; // Прерываем если нашли баланс
+        }
+      }
+
+      if (foundWallet) {
+        stats.foundWallets++;
+        await saveFoundWallet(foundWallet);
+      }
+
+      // Небольшая пауза между мнемониками
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+    } catch (error) {
+      console.log(`\x1b[31m❌ Воркер ${workerId}: ${error.message}\x1b[0m`);
+      await new Promise(resolve => setTimeout(resolve, CONFIG.retryDelay));
+    }
+  }
+}
+
+// Основная функция
+async function main() {
+  console.log("🎯 TON Scanner с проверенными API");
+  console.log("=================================");
+  console.log("✅ Проверенные рабочие API endpoints:");
+  console.log("1. toncenter.com - основной API");
+  console.log("2. tonapi.io/v2 - официальный API");  
+  console.log("3. tonviewer.com - популярный explorer");
+  console.log("4. ton.sh - быстрый API");
+  console.log("=================================");
+  console.log("⏸️  Ctrl+C для остановки\n");
+
+  if (!fs.existsSync(CONFIG.saveFile)) {
+    fs.writeFileSync(CONFIG.saveFile, "Найденные кошельки TON:\n========================================\n", 'utf8');
+  }
+
+  // Запуск воркеров
+  const workers = [];
+  for (let i = 1; i <= CONFIG.workers; i++) {
+    workers.push(workerProcess(i));
+  }
+
+  process.on('SIGINT', async () => {
+    console.log("\n\n🛑 Остановка сканера...");
+    console.log("📈 Итоговая статистика:");
+    console.log(`   Проверок: ${stats.totalChecks}`);
+    console.log(`   Найдено: ${stats.foundWallets}`);
+    process.exit(0);
+  });
+
+  await Promise.all(workers);
+}
+
+main().catch(console.error);
