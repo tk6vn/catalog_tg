@@ -358,7 +358,6 @@
             }
         }
 
-        /* Анимации */
         @keyframes fadeIn {
             from { 
                 opacity: 0; 
@@ -374,18 +373,15 @@
             animation: fadeIn 0.4s ease-out;
         }
 
-        /* Плавная прокрутка */
         html {
             scroll-behavior: smooth;
         }
 
-        /* Selection color */
         ::selection {
             background: #0A84FF;
             color: white;
         }
 
-        /* Scrollbar для темной темы */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -427,23 +423,19 @@
             <div class="current-week-title" id="currentWeek"></div>
             
             <div class="timetable" id="timetable">
-                <!-- Расписание будет загружено через JavaScript -->
             </div>
         </main>
     </div>
 
     <script>
-        // Функция для получения дат недели
         function getWeekDates(weekOffset = 0) {
             const today = new Date();
             const currentDay = today.getDay();
             const currentDate = today.getDate();
             
-            // Находим понедельник текучной недели
             const monday = new Date(today);
             monday.setDate(currentDate - currentDay + (currentDay === 0 ? -6 : 1));
             
-            // Применяем смещение недели
             monday.setDate(monday.getDate() + (weekOffset * 7));
             
             const weekDates = [];
@@ -467,13 +459,12 @@
             return weekDates;
         }
 
-        // Данные расписания
         const scheduleData = {
             odd: {
                 name: "Нечётная неделя (Числитель)",
                 days: [
                     {
-                        lessons: [] // Нет пар
+                        lessons: [] 
                     },
                     {
                         lessons: [
@@ -494,7 +485,7 @@
                         ]
                     },
                     {
-                        lessons: [] // Нет пар
+                        lessons: [] 
                     },
                     {
                         lessons: [
@@ -514,7 +505,7 @@
                         ]
                     },
                     {
-                        lessons: [] // Нет пар
+                        lessons: [] 
                     },
                     {
                         lessons: [
@@ -523,7 +514,7 @@
                         ]
                     },
                     {
-                        lessons: [] // Нет пар
+                        lessons: [] 
                     },
                     {
                         lessons: [
@@ -532,30 +523,27 @@
                         ]
                     },
                     {
-                        lessons: [] // Нет пар
+                        lessons: [] 
                     }
                 ]
             }
         };
 
-        let currentWeekOffset = 0; // 0 - текущая неделя
+        let currentWeekOffset = 0;
 
-        // Функция для определения типа недели (чётная/нечётная)
         function getWeekType(offset = 0) {
             const today = new Date();
-            const startDate = new Date('2024-09-02'); // Начало семестра
+            const startDate = new Date('2024-09-02');
             const diffTime = today - startDate;
             const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7)) + offset;
             return (diffWeeks % 2) === 0 ? 'odd' : 'even';
         }
 
-        // Загрузка расписания
         function loadSchedule() {
             const weekType = getWeekType(currentWeekOffset);
             const weekData = scheduleData[weekType];
             const weekDates = getWeekDates(currentWeekOffset);
             
-            // Обновляем информацию о неделе
             let weekText = "Текущая неделя";
             if (currentWeekOffset > 0) {
                 weekText = `Через ${currentWeekOffset} нед.`;
@@ -567,13 +555,11 @@
             document.getElementById('currentWeek').textContent = weekData.name;
             document.getElementById('weekType').textContent = weekType === 'odd' ? 'Числитель' : 'Знаменатель';
             
-            // Обновляем даты недели
             if (weekDates.length > 0) {
                 document.getElementById('weekDates').textContent = 
                     `${weekDates[0].date} - ${weekDates[weekDates.length - 1].date}`;
             }
             
-            // Отображаем расписание
             const timetableEl = document.getElementById('timetable');
             timetableEl.innerHTML = '';
             
@@ -613,36 +599,17 @@
             });
         }
 
-        // Смена недели
         function changeWeek(direction) {
             currentWeekOffset += direction;
             loadSchedule();
         }
 
-        // Инициализация
         document.addEventListener('DOMContentLoaded', function() {
             loadSchedule();
             
-            // Добавляем обработчики для клавиатуры
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'ArrowLeft') changeWeek(-1);
                 if (e.key === 'ArrowRight') changeWeek(1);
-            });
-            
-            // Swipe для мобильных
-            let touchStartX = 0;
-            document.addEventListener('touchstart', e => {
-                touchStartX = e.changedTouches[0].screenX;
-            });
-            
-            document.addEventListener('touchend', e => {
-                const touchEndX = e.changedTouches[0].screenX;
-                const diffX = touchEndX - touchStartX;
-                
-                if (Math.abs(diffX) > 50) {
-                    if (diffX > 0) changeWeek(-1); // Swipe right
-                    else changeWeek(1); // Swipe left
-                }
             });
         });
     </script>
