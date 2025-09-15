@@ -1,721 +1,650 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ton wallet scanner - by tk6vn</title>
-  <style>
-    *
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      font-family: 'Courier New', monospace;
-      background: #000;
-      color: #ffffff;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      overflow-x: hidden;
-    }
-    
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      background: #000;
-      border: 1px solid #9E9E9E;
-      padding: 20px;
-      margin: 20px 0;
-    }
-    
-    .header {
-      text-align: center;
-      margin-bottom: 30px;
-      padding-bottom: 15px;
-      border-bottom: 1px solid #9E9E9E;
-    }
-    
-    .header h1 {
-      font-size: 24px;
-      font-weight: normal;
-      text-transform: lowercase;
-      color: #9E9E9E;
-      margin-bottom: 5px;
-    }
-    
-    .header p {
-      font-size: 12px;
-      color: #9E9E9E;
-      opacity: 0.7;
-    }
-    
-    .config {
-      margin-bottom: 25px;
-      padding: 15px;
-      border: 1px solid #333;
-      background: #111;
-    }
-    
-    .config-item {
-      margin-bottom: 15px;
-    }
-    
-    .config-label {
-      color: #9E9E9E;
-      margin-bottom: 5px;
-      font-size: 12px;
-      opacity: 0.8;
-    }
-    
-    input, select {
-      width: 100%;
-      padding: 8px;
-      background: #000;
-      border: 1px solid #333;
-      color: #9E9E9E;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-    }
-    
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
-      margin-bottom: 25px;
-      font-size: 14px;
-    }
-    
-    .stat-item {
-      padding: 10px;
-      border: 1px solid #333;
-      background: #111;
-    }
-    
-    .stat-label {
-      color: #9E9E9E;
-      margin-bottom: 5px;
-      font-size: 12px;
-      opacity: 0.8;
-    }
-    
-    .stat-value {
-      font-size: 18px;
-      color: #fff;
-    }
-    
-    .workers-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-    
-    .worker-item {
-      padding: 15px;
-      border: 1px solid #333;
-      background: #111;
-      font-size: 12px;
-    }
-    
-    .worker-header {
-      color: #9E9E9E;
-      margin-bottom: 10px;
-      padding-bottom: 5px;
-      border-bottom: 1px solid #333;
-    }
-    
-    .worker-data {
-      margin-bottom: 8px;
-    }
-    
-    .mnemonic-value {
-      color: #FFE600;
-      word-break: break-all;
-      font-size: 11px;
-      line-height: 1.3;
-    }
-    
-    .address-value {
-      color: #00ffff;
-      font-size: 11px;
-      word-break: break-all;
-    }
-    
-    .balance-value {
-      font-weight: bold;
-    }
-    
-    .balance-zero {
-      color: #ff0000;
-    }
-    
-    .balance-positive {
-      color: #00ff00;
-    }
-    
-    .controls {
-      display: flex;
-      gap: 15px;
-      margin-bottom: 20px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    
-    .btn {
-      padding: 10px 20px;
-      border: 1px solid #00ff00;
-      background: #000;
-      color: #00ff00;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      cursor: pointer;
-      text-transform: lowercase;
-      transition: all 0.2s ease;
-    }
-    
-    .btn:hover:not(:disabled) {
-      background: #00ff00;
-      color: #000;
-    }
-    
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      border-color: #333;
-      color: #333;
-    }
-    
-    .status {
-      text-align: center;
-      margin-bottom: 20px;
-      padding: 10px;
-      border: 1px solid #333;
-      background: #111;
-      font-size: 14px;
-    }
-    
-    .status-stopped {
-      color: #ff0000;
-    }
-    
-    .status-running {
-      color: #00ff00;
-    }
-    
-    .last-update {
-      text-align: center;
-      margin-bottom: 25px;
-      font-size: 12px;
-      color: #666;
-    }
-    
-    .found-wallets {
-      border: 1px solid #333;
-      background: #111;
-      padding: 15px;
-    }
-    
-    .found-wallets h3 {
-      color: #00ff00;
-      margin-bottom: 15px;
-      font-size: 16px;
-      text-align: center;
-      text-transform: lowercase;
-      font-weight: normal;
-    }
-    
-    .wallets-list {
-      max-height: 300px;
-      overflow-y: auto;
-    }
-    
-    .wallet-item {
-      background: #000;
-      padding: 12px;
-      margin-bottom: 10px;
-      border: 1px solid #333;
-      font-size: 12px;
-    }
-    
-    .wallet-item p {
-      margin-bottom: 6px;
-    }
-    
-    .wallet-mnemonic {
-      color: #00ff00;
-      word-break: break-all;
-      font-size: 11px;
-      line-height: 1.3;
-    }
-    
-    .wallet-address {
-      color: #00ffff;
-      font-size: 11px;
-      word-break: break-all;
-    }
-    
-    .wallet-balance {
-      color: #00ff00;
-      font-weight: bold;
-    }
-    
-    .notification {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 18px;
-      border: 1px solid #00ff00;
-      background: #000;
-      color: #00ff00;
-      font-family: 'Courier New', monospace;
-      font-size: 13px;
-      z-index: 1000;
-      opacity: 0;
-      transform: translateX(100%);
-      transition: all 0.3s ease;
-    }
-    
-    .notification.show {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    
-    @media (max-width: 768px) {
-      .stats {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .workers-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расписание ЭЭм(ЭСА)-1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', sans-serif;
+            background: #272727;
+            min-height: 100vh;
+            padding: 0;
+            color: #FFFFFF;
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased;
+            padding-top: 120px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: #272727;
+            border-radius: 0;
+            overflow: hidden;
+        }
+
+        .fixed-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(28, 28, 30, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid #38383A;
+            padding: 15px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .week-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .nav-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 12px;
+            background: #0A84FF;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 60px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(10, 132, 255, 0.4);
+        }
+
+        .nav-btn:hover {
+            background: #007AFF;
+            transform: translateY(-1px);
+        }
+
+        .week-info-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .week-info {
+            background: #1C1C1E;
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 0.95em;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+            color: #0A84FF;
+            border: 1px solid #38383A;
+        }
+
+        .week-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1C1C1E;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            color: #8E8E93;
+            font-weight: 500;
+            border: 1px solid #38383A;
+        }
+
+        .week-type {
+            background: #4cd964;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%);
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            margin-top: 0;
+        }
+
+        .header h1 {
+            font-weight: 600;
+            font-size: 1.6em;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        .group-info {
+            font-size: 0.95em;
+            opacity: 0.9;
+            margin-bottom: 0;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .main {
+            padding: 20px 15px;
+        }
+
+        .current-week-title {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+            color: #0A84FF;
+            font-weight: 600;
+        }
+
+        .timetable {
+            display: grid;
+            gap: 16px;
+            margin-top: 15px;
+        }
+
+        .day-card {
+            background: #1C1C1E;
+            border-radius: 16px;
+            padding: 18px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid #38383A;
+        }
+
+        .day-card.today {
+            border: 2px solid #d0102b;
+            background: linear-gradient(135deg, #1C1C1E 0%, #2C2C2E 100%);
+            transform: scale(1.02);
+            box-shadow: 0 4px 25px rgba(255, 0, 0, 0.3);
+        }
+
+        .day-header {
+            color: #0A84FF;
+            font-weight: 600;
+            font-size: 1.15em;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #38383A;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .day-date {
+            font-size: 0.85em;
+            color: #8E8E93;
+            font-weight: 500;
+        }
+
+        .lessons-container {
+            display: grid;
+            gap: 12px;
+        }
+
+        .lesson {
+            background: #2C2C2E;
+            padding: 16px;
+            border-radius: 14px;
+            border-left: 4px solid #0A84FF;
+            transition: transform 0.2s ease;
+        }
+
+        .lesson:hover {
+            transform: translateY(-2px);
+            background: #3A3A3C;
+        }
+
+        .lesson-time {
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lesson-pair {
+            background: #0A84FF;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+
+        .lesson-discipline {
+            font-weight: 600;
+            color: #FFFFFF;
+            margin-bottom: 8px;
+            font-size: 1em;
+            line-height: 1.4;
+        }
+
+        .lesson-details {
+            display: grid;
+            gap: 6px;
+        }
+
+        .lesson-teacher, .lesson-auditory {
+            color: #8E8E93;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+
+        .lesson-teacher::before {
+            content: "😒";
+            font-size: 0.9em;
+        }
+
+        .lesson-auditory::before {
+            content: "😒";
+            font-size: 0.9em;
+        }
+
+        .no-lessons {
+            text-align: center;
+            color: #8E8E93;
+            font-style: italic;
+            padding: 25px;
+            background: #2C2C2E;
+            border-radius: 12px;
+            border: 1px dashed #38383A;
+            font-size: 0.95em;
+        }
+
+        .today-badge {
+            background: #d0102b;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+                font-size: 14px;
+                padding-top: 110px;
+            }
+            
+            .fixed-nav {
+                padding: 12px;
+            }
+            
+            .header {
+                padding: 0px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.4em;
+            }
+            
+            .week-navigation {
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+            
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 0.85em;
+                min-width: 55px;
+            }
+            
+            .week-info {
+                padding: 10px 14px;
+                font-size: 0.9em;
+            }
+            
+            .week-details {
+                padding: 8px 12px;
+                font-size: 1em;
+            }
+            
+            .main {
+                padding: 15px 12px;
+            }
+            
+            .day-card {
+                padding: 15px;
+            }
+            
+            .lesson {
+                padding: 14px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            body {
+                padding-top: 100px;
+            }
+            
+            .nav-btn {
+                padding: 7px 10px;
+                font-size: 0.8em;
+                min-width: 50px;
+            }
+            
+            .week-info {
+                font-size: 0.85em;
+                padding: 8px 12px;
+            }
+            
+            .week-details {
+                flex-direction: column;
+                gap: 5px;
+                text-align: center;
+            }
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(15px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .day-card {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        /* Плавная прокрутка */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Selection color */
+        ::selection {
+            background: #0A84FF;
+            color: white;
+        }
+
+        /* Scrollbar для темной темы */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1C1C1E;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #38383A;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #48484A;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>multi-threaded ton scanner</h1>
-      <p>by tk6vn - parallel wallet checking</p>
-    </div>
-    
-    <div class="config">
-      <div class="config-item">
-        <div class="config-label">number of workers (threads)</div>
-        <input type="number" id="workersCount" value="3" min="1" max="10">
-      </div>
-      <div class="config-item">
-        <div class="config-label">requests per second limit</div>
-        <input type="number" id="rpsLimit" value="2" min="1" max="5">
-      </div>
-    </div>
-    
-    <div class="stats">
-      <div class="stat-item">
-        <div class="stat-label">total generated</div>
-        <div class="stat-value" id="totalGenerated">0</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-label">active workers</div>
-        <div class="stat-value" id="activeWorkers">0</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-label">wallets with balance</div>
-        <div class="stat-value" id="foundCount">0</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-label">requests rate</div>
-        <div class="stat-value" id="requestRate">0/s</div>
-      </div>
-    </div>
-    
-    <div class="workers-grid" id="workersGrid">
-      <!-- Workers will be dynamically added here -->
-    </div>
-    
-    <div class="controls">
-      <button class="btn" id="startBtn">start scanning</button>
-      <button class="btn" id="stopBtn" disabled>stop scanning</button>
-      <button class="btn" id="addWorkerBtn">+ add worker</button>
-      <button class="btn" id="removeWorkerBtn">- remove worker</button>
-    </div>
-    
-    <div class="status status-stopped" id="statusMessage">
-      scanner status: stopped
-    </div>
-    
-    <div class="last-update">
-      last update: <span id="lastUpdate">-</span>
-    </div>
-    
-    <div class="found-wallets">
-      <h3>found wallets with balance</h3>
-      <div class="wallets-list" id="walletsList">
-        <p style="text-align: center; color: #666;">no wallets with balance found yet</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="notification" id="notification"></div>
-
-  <script type="module">
-    // Import TON libraries
-    import { mnemonicToWalletKey, mnemonicNew } from "https://esm.sh/@ton/crypto";
-    import { WalletContractV3R1, WalletContractV3R2, WalletContractV4, WalletContractV5R1 } from "https://esm.sh/@ton/ton";
-
-    // Main application state
-    const state = {
-      isScanning: false,
-      totalGenerated: 0,
-      foundCount: 0,
-      activeWorkers: 0,
-      workers: [],
-      requestRate: 0,
-      foundWallets: [],
-      lastRequestTime: 0
-    };
-
-    // Elements
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    const addWorkerBtn = document.getElementById('addWorkerBtn');
-    const removeWorkerBtn = document.getElementById('removeWorkerBtn');
-    const workersCountInput = document.getElementById('workersCount');
-    const rpsLimitInput = document.getElementById('rpsLimit');
-    const totalGeneratedEl = document.getElementById('totalGenerated');
-    const activeWorkersEl = document.getElementById('activeWorkers');
-    const foundCountEl = document.getElementById('foundCount');
-    const requestRateEl = document.getElementById('requestRate');
-    const statusMessageEl = document.getElementById('statusMessage');
-    const lastUpdateEl = document.getElementById('lastUpdate');
-    const walletsListEl = document.getElementById('walletsList');
-    const workersGridEl = document.getElementById('workersGrid');
-    const notificationEl = document.getElementById('notification');
-
-    // Initialize workers
-    function initializeWorkers() {
-      const workersCount = parseInt(workersCountInput.value) || 3;
-      state.workers = Array(workersCount).fill().map((_, index) => ({
-        id: index + 1,
-        status: 'idle',
-        generated: 0,
-        found: 0,
-        currentPhrase: '',
-        currentAddress: '',
-        currentVersion: '',
-        currentBalance: 0
-      }));
-      renderWorkers();
-    }
-
-    // Render workers grid
-    function renderWorkers() {
-      workersGridEl.innerHTML = '';
-      state.workers.forEach(worker => {
-        const workerEl = document.createElement('div');
-        workerEl.className = 'worker-item';
-        workerEl.innerHTML = `
-          <div class="worker-header">worker #${worker.id} - ${worker.status}</div>
-          <div class="worker-data">
-            <div>generated: ${worker.generated}</div>
-            <div>found: ${worker.found}</div>
-          </div>
-          <div class="worker-data">
-            <div>phrase: <span class="mnemonic-value">${worker.currentPhrase || 'waiting...'}</span></div>
-            <div>version: ${worker.currentVersion || '-'}</div>
-            <div>address: <span class="address-value">${worker.currentAddress || '-'}</span></div>
-            <div>balance: <span class="balance-value ${worker.currentBalance > 0 ? 'balance-positive' : 'balance-zero'}">${worker.currentBalance > 0 ? worker.currentBalance.toFixed(6) : '0'} TON</span></div>
-          </div>
-        `;
-        workersGridEl.appendChild(workerEl);
-      });
-      activeWorkersEl.textContent = state.workers.length;
-    }
-
-    // Update worker status
-    function updateWorkerStatus(workerId, updates) {
-      const worker = state.workers.find(w => w.id === workerId);
-      if (worker) {
-        Object.assign(worker, updates);
-        renderWorkers();
-      }
-    }
-
-    // Get balance function with rate limiting
-    async function getBalance(address) {
-      const now = Date.now();
-      const rpsLimit = parseInt(rpsLimitInput.value) || 2;
-      const minDelay = 1000 / rpsLimit;
-      
-      if (state.lastRequestTime > 0) {
-        const timeSinceLastRequest = now - state.lastRequestTime;
-        if (timeSinceLastRequest < minDelay) {
-          await new Promise(resolve => setTimeout(resolve, minDelay - timeSinceLastRequest));
-        }
-      }
-      
-      state.lastRequestTime = Date.now();
-      state.requestRate = rpsLimit;
-      requestRateEl.textContent = `${rpsLimit}/s`;
-      
-      try {
-        const balanceUrl = `https://toncenter.com/api/v2/getAddressInformation?address=${address}`;
-        const response = await fetch(balanceUrl);
+    <div class="fixed-nav">
+        <div class="week-navigation">
+            <button class="nav-btn" onclick="changeWeek(-1)" title="Предыдущая неделя">← Назад</button>
+            
+            <div class="week-info-container">
+                <div class="week-info" id="weekInfo">Текущая неделя</div>
+            </div>
+            
+            <button class="nav-btn" onclick="changeWeek(1)" title="Следующая неделя">Вперёд →</button>
+        </div>
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.ok) {
-          return parseInt(data.result.balance, 10) / 1e9;
-        }
-        return 0;
-      } catch (error) {
-        console.error('Balance check error:', error);
-        return 0;
-      }
-    }
+        <div class="week-details">
+            <span id="weekDates">Загрузка дат...</span>
+            <span class="week-type" id="weekType">Числитель</span>
+        </div>
+    </div>
 
-    // Show notification
-    function showNotification(message) {
-      notificationEl.textContent = message;
-      notificationEl.classList.add('show');
-      setTimeout(() => notificationEl.classList.remove('show'), 3000);
-    }
-
-    // Update last update time
-    function updateLastUpdateTime() {
-      lastUpdateEl.textContent = new Date().toLocaleString();
-    }
-
-    // Update wallets list
-    function updateWalletsList() {
-      if (state.foundWallets.length === 0) {
-        walletsListEl.innerHTML = '<p style="text-align: center; color: #666;">no wallets with balance found yet</p>';
-        return;
-      }
-      
-      walletsListEl.innerHTML = '';
-      state.foundWallets.forEach(wallet => {
-        const walletItem = document.createElement('div');
-        walletItem.className = 'wallet-item';
-        walletItem.innerHTML = `
-          <p><strong>worker:</strong> ${wallet.workerId}</p>
-          <p><strong>version:</strong> ${wallet.version}</p>
-          <p><strong>mnemonic:</strong> <span class="wallet-mnemonic">${wallet.mnemonic}</span></p>
-          <p><strong>address:</strong> <span class="wallet-address">${wallet.address}</span></p>
-          <p><strong>balance:</strong> <span class="wallet-balance">${wallet.balance.toFixed(6)} TON</span></p>
-          <p><strong>found:</strong> ${new Date(wallet.timestamp).toLocaleString()}</p>
-        `;
-        walletsListEl.appendChild(walletItem);
-      });
-    }
-
-    // Save data to localStorage
-    function saveData() {
-      const data = {
-        totalGenerated: state.totalGenerated,
-        foundCount: state.foundCount,
-        foundWallets: state.foundWallets,
-        lastUpdate: new Date().toISOString()
-      };
-      localStorage.setItem('tonMultiScannerData', JSON.stringify(data));
-      updateLastUpdateTime();
-    }
-
-    // Load saved data
-    function loadSavedData() {
-      const savedData = localStorage.getItem('tonMultiScannerData');
-      if (savedData) {
-        const data = JSON.parse(savedData);
-        state.totalGenerated = data.totalGenerated || 0;
-        state.foundCount = data.foundCount || 0;
-        state.foundWallets = data.foundWallets || [];
-        
-        totalGeneratedEl.textContent = state.totalGenerated.toLocaleString();
-        foundCountEl.textContent = state.foundCount.toLocaleString();
-        updateWalletsList();
-      }
-    }
-
-    // Worker function - последовательная проверка всех версий кошельков
-    async function runWorker(workerId) {
-      while (state.isScanning) {
-        try {
-          updateWorkerStatus(workerId, { status: 'generating' });
-          
-          // Generate proper mnemonic using TON library
-          const mnemonic = await mnemonicNew(24);
-          const mnemonicPhrase = mnemonic.join(' ');
-          
-          updateWorkerStatus(workerId, {
-            status: 'checking',
-            currentPhrase: mnemonicPhrase,
-            currentAddress: '',
-            currentVersion: '',
-            currentBalance: 0
-          });
-          
-          // Get keys from mnemonic
-          const keyPair = await mnemonicToWalletKey(mnemonic);
-          
-          // Create all wallet versions
-          const walletVersions = [
-            { version: 'v3R1', wallet: WalletContractV3R1.create({ workchain: 0, publicKey: keyPair.publicKey }) },
-            { version: 'v3R2', wallet: WalletContractV3R2.create({ workchain: 0, publicKey: keyPair.publicKey }) },
-            { version: 'v4', wallet: WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey }) },
-            { version: 'v5R1', wallet: WalletContractV5R1.create({ workchain: 0, publicKey: keyPair.publicKey }) }
-          ];
-          
-          let foundWallet = null;
-          
-          // Последовательно проверяем каждую версию кошелька
-          for (const { version, wallet } of walletVersions) {
-            if (!state.isScanning) break; // Проверяем, не остановлен ли сканер
+    <div class="container">
+        <main class="main">
+            <div class="current-week-title" id="currentWeek"></div>
             
-            const address = wallet.address.toString();
+            <div class="timetable" id="timetable">
+                <!-- Расписание будет загружено через JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Функция для получения дат недели
+        function getWeekDates(weekOffset = 0) {
+            const today = new Date();
+            const currentDay = today.getDay();
+            const currentDate = today.getDate();
             
-            // Обновляем UI для текущей проверяемой версии
-            updateWorkerStatus(workerId, {
-              currentAddress: address,
-              currentVersion: version
-            });
+            // Находим понедельник текучной недели
+            const monday = new Date(today);
+            monday.setDate(currentDate - currentDay + (currentDay === 0 ? -6 : 1));
             
-            // Даем время для отображения в UI
-            await new Promise(resolve => setTimeout(resolve, 50));
+            // Применяем смещение недели
+            monday.setDate(monday.getDate() + (weekOffset * 7));
             
-            // Проверяем баланс с ограничением скорости
-            const balance = await getBalance(address);
+            const weekDates = [];
+            const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
             
-            if (balance > 0) {
-              foundWallet = {
-                workerId,
-                version,
-                mnemonic: mnemonicPhrase,
-                address: address,
-                balance: balance,
-                timestamp: new Date().toISOString()
-              };
-              break; // Останавливаем проверку при найденном балансе
+            for (let i = 0; i < 6; i++) {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + i);
+                
+                weekDates.push({
+                    name: days[i],
+                    date: date.toLocaleDateString('ru-RU', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    }),
+                    isToday: date.toDateString() === today.toDateString()
+                });
             }
-          }
-          
-          // Update counters
-          state.totalGenerated++;
-          totalGeneratedEl.textContent = state.totalGenerated.toLocaleString();
-          
-          updateWorkerStatus(workerId, {
-            generated: state.workers[workerId - 1].generated + 1,
-            currentBalance: foundWallet ? foundWallet.balance : 0
-          });
-          
-          // Check if wallet has balance
-          if (foundWallet) {
-            state.foundCount++;
-            foundCountEl.textContent = state.foundCount.toLocaleString();
             
-            state.foundWallets.unshift(foundWallet);
-            updateWalletsList();
-            saveData();
+            return weekDates;
+        }
+
+        // Данные расписания
+        const scheduleData = {
+            odd: {
+                name: "Нечётная неделя (Числитель)",
+                days: [
+                    {
+                        lessons: [] // Нет пар
+                    },
+                    {
+                        lessons: [
+                            { time: "16:45-18:15", pair: "5 пара", discipline: "Основы системного анализа и теории принятия решений (пр.)", auditory: "330-5/С", teacher: "Ромаданова Мария Михайловна" },
+                            { time: "18:30-20:00", pair: "6 пара", discipline: "Социальные коммуникации. Психология (пр.)", auditory: "606/С", teacher: "Соловьева Елена Анатольевна" }
+                        ]
+                    },
+                    {
+                        lessons: [    
+                            { time: "18:30-20:00", pair: "6 пара", discipline: "Силовые электронные преобразователи зданий и сооружений (л.)", auditory: "Teams", teacher: "Горлатов Дмитрий Владимирович" },
+                            { time: "20:15-21:45", pair: "7 пара", discipline: "Умный дом (л.)", auditory: "Teams", teacher: "Епишкин Александр Евгеньевич" }
+                        ]
+                    },
+                    {
+                        lessons: [    
+                            { time: "16:45-18:15", pair: "5 пара", discipline: "Силовые электронные преобразователи зданий и сооружений (пр.)", auditory: "205-5/С", teacher: "Горлатов Дмитрий Владимирович." },
+                            { time: "18:30-20:00", pair: "6 пара", discipline: "Умный дом (пр.)", auditory: "504/Г", teacher: "Епишкин Александр Евгеньевич" }
+                        ]
+                    },
+                    {
+                        lessons: [] // Нет пар
+                    },
+                    {
+                        lessons: [
+                            { time: "09:00-10:30", pair: "1 пара", discipline: "Проектирование систем освещения (л.)", auditory: "Teams", teacher: "Горлатов Дмитрий Владимирович" },
+                            { time: "10:45-12:15", pair: "2 пара", discipline: "Организация производственной деятельности (л.)", auditory: "Teams", teacher: "Молодцов Максим Вилленинович" }
+                        ]
+                    }
+                ]
+            },
+            even: {
+                name: "Чётная неделя (Знаменатель)", 
+                days: [
+                    {
+                        lessons: [
+                            { time: "16:45-18:15", pair: "5 пара", discipline: "Организация производственной деятельности (л.)", auditory: "Teams", teacher: "Молодцов Максим Вилленинович" },
+                            { time: "18:30-20:00", pair: "6 пара", discipline: "Основы системного анализа и теории принятия решений (л.)", auditory: "Teams", teacher: "Ромаданова Мария Михайловна" }
+                        ]
+                    },
+                    {
+                        lessons: [] // Нет пар
+                    },
+                    {
+                        lessons: [
+                            { time: "16:45-18:15", pair: "5 пара", discipline: "Теория принятия решений (л.)", auditory: "Teams", teacher: "Томчина Ольга Петровна" },
+                            { time: "18:30-20:00", pair: "6 пара", discipline: "Социальные коммуникации. Психология (л.)", auditory: "Teams", teacher: "Соловьева Елена Анатольевна" }
+                        ]
+                    },
+                    {
+                        lessons: [] // Нет пар
+                    },
+                    {
+                        lessons: [
+                            { time: "16:45-18:15", pair: "5 пара", discipline: "Теория принятия решений (пр.)", auditory: "503/Г", teacher: "Томчина Ольга Петровна" },
+                            { time: "18:30-20:00", pair: "6 пара", discipline: "Проектирование систем освещения (пр.)", auditory: "205-6/С", teacher: "Горлатов Дмитрий Владимирович" }
+                        ]
+                    },
+                    {
+                        lessons: [] // Нет пар
+                    }
+                ]
+            }
+        };
+
+        let currentWeekOffset = 0; // 0 - текущая неделя
+
+        // Функция для определения типа недели (чётная/нечётная)
+        function getWeekType(offset = 0) {
+            const today = new Date();
+            const startDate = new Date('2024-09-02'); // Начало семестра
+            const diffTime = today - startDate;
+            const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7)) + offset;
+            return (diffWeeks % 2) === 0 ? 'odd' : 'even';
+        }
+
+        // Загрузка расписания
+        function loadSchedule() {
+            const weekType = getWeekType(currentWeekOffset);
+            const weekData = scheduleData[weekType];
+            const weekDates = getWeekDates(currentWeekOffset);
             
-            updateWorkerStatus(workerId, {
-              found: state.workers[workerId - 1].found + 1
+            // Обновляем информацию о неделе
+            let weekText = "Текущая неделя";
+            if (currentWeekOffset > 0) {
+                weekText = `Через ${currentWeekOffset} нед.`;
+            } else if (currentWeekOffset < 0) {
+                weekText = `${Math.abs(currentWeekOffset)} нед. назад`;
+            }
+            
+            document.getElementById('weekInfo').textContent = weekText;
+            document.getElementById('currentWeek').textContent = weekData.name;
+            document.getElementById('weekType').textContent = weekType === 'odd' ? 'Числитель' : 'Знаменатель';
+            
+            // Обновляем даты недели
+            if (weekDates.length > 0) {
+                document.getElementById('weekDates').textContent = 
+                    `${weekDates[0].date} - ${weekDates[weekDates.length - 1].date}`;
+            }
+            
+            // Отображаем расписание
+            const timetableEl = document.getElementById('timetable');
+            timetableEl.innerHTML = '';
+            
+            weekData.days.forEach((day, index) => {
+                const dateInfo = weekDates[index];
+                const isToday = dateInfo && dateInfo.isToday;
+                
+                const dayCard = document.createElement('div');
+                dayCard.className = `day-card ${isToday ? 'today' : ''}`;
+                
+                dayCard.innerHTML = `
+                    <div class="day-header">
+                        <span>${dateInfo.name} ${isToday ? '<span class="today-badge">Сегодня</span>' : ''}</span>
+                        <span class="day-date">${dateInfo.date}</span>
+                    </div>
+                    <div class="lessons-container">
+                        ${day.lessons.length > 0 ? 
+                            day.lessons.map(lesson => `
+                                <div class="lesson">
+                                    <div class="lesson-time">
+                                        <span>${lesson.time}</span>
+                                        <span class="lesson-pair">${lesson.pair}</span>
+                                    </div>
+                                    <div class="lesson-discipline">${lesson.discipline}</div>
+                                    <div class="lesson-details">
+                                        <div class="lesson-auditory">${lesson.auditory}</div>
+                                        <div class="lesson-teacher">${lesson.teacher}</div>
+                                    </div>
+                                </div>
+                            `).join('') : 
+                            '<div class="no-lessons">Пар нет</div>'
+                        }
+                    </div>
+                `;
+                
+                timetableEl.appendChild(dayCard);
+            });
+        }
+
+        // Смена недели
+        function changeWeek(direction) {
+            currentWeekOffset += direction;
+            loadSchedule();
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSchedule();
+            
+            // Добавляем обработчики для клавиатуры
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft') changeWeek(-1);
+                if (e.key === 'ArrowRight') changeWeek(1);
             });
             
-            showNotification(`worker #${workerId} found ${foundWallet.version} wallet with ${foundWallet.balance.toFixed(6)} TON`);
-          }
-          
-          // Small delay between iterations
-          await new Promise(resolve => setTimeout(resolve, 100));
-          
-        } catch (error) {
-          console.error(`Worker ${workerId} error:`, error);
-          updateWorkerStatus(workerId, { 
-            status: 'error', 
-            currentBalance: -1,
-            currentAddress: 'Error',
-            currentVersion: 'Error'
-          });
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-      }
-      
-      updateWorkerStatus(workerId, { 
-        status: 'idle',
-        currentAddress: '',
-        currentVersion: ''
-      });
-    }
-
-    // Start scanning
-    startBtn.addEventListener('click', async () => {
-      state.isScanning = true;
-      startBtn.disabled = true;
-      stopBtn.disabled = false;
-      statusMessageEl.textContent = 'scanner status: running';
-      statusMessageEl.className = 'status status-running';
-      
-      initializeWorkers();
-      
-      // Start all workers
-      state.workers.forEach(worker => {
-        runWorker(worker.id);
-      });
-      
-      showNotification('multi-threaded scanner started');
-    });
-
-    // Stop scanning
-    stopBtn.addEventListener('click', () => {
-      state.isScanning = false;
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      statusMessageEl.textContent = 'scanner status: stopped';
-      statusMessageEl.className = 'status status-stopped';
-      
-      showNotification('scanner stopped');
-    });
-
-    // Add worker
-    addWorkerBtn.addEventListener('click', () => {
-      const newWorkerId = state.workers.length + 1;
-      state.workers.push({
-        id: newWorkerId,
-        status: 'idle',
-        generated: 0,
-        found: 0,
-        currentPhrase: '',
-        currentAddress: '',
-        currentVersion: '',
-        currentBalance: 0
-      });
-      workersCountInput.value = state.workers.length;
-      renderWorkers();
-      
-      if (state.isScanning) {
-        runWorker(newWorkerId);
-      }
-    });
-
-    // Remove worker
-    removeWorkerBtn.addEventListener('click', () => {
-      if (state.workers.length > 1) {
-        state.workers.pop();
-        workersCountInput.value = state.workers.length;
-        renderWorkers();
-      }
-    });
-
-    // Initialize
-    loadSavedData();
-    updateLastUpdateTime();
-    initializeWorkers();
-  </script>
+            // Swipe для мобильных
+            let touchStartX = 0;
+            document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            document.addEventListener('touchend', e => {
+                const touchEndX = e.changedTouches[0].screenX;
+                const diffX = touchEndX - touchStartX;
+                
+                if (Math.abs(diffX) > 50) {
+                    if (diffX > 0) changeWeek(-1); // Swipe right
+                    else changeWeek(1); // Swipe left
+                }
+            });
+        });
+    </script>
 </body>
 </html>
